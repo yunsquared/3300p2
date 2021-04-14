@@ -15,7 +15,7 @@
     <body>
         <h1>title</h1>
 
-        <svg id="us-map" height = "800" width="1000" style="border: 1px solid lightgray;"></svg>
+        <svg id="us-map" height = "1200" width="2000" style="border: 1px solid lightgray;"></svg>
 
         <script>
             const us = d3.select("#us-map");
@@ -40,18 +40,44 @@
 
                 const refugee = await d3.json("../datasets/refugee.json");
 
+                const worldmap = await d3.json("../datasets/countries-110m.json");
+
                 console.log(broadband);
                 console.log(countymap);
                 console.log(county10m);
                 console.log(refugee);
+                console.log(worldmap);
 
-                const projection = d3.geoAlbersUsa().scale(1300).translate([500,400]);
-                const path = d3.geoPath().projection(projection);
-                const nation = topojson.feature(county10m, county10m.objects.nation);
-                const statesMesh = topojson.mesh(county10m, county10m.objects.states);
+                // const projection = d3.geoAlbersUsa().scale(1300).translate([500,400]);
+                // const path = d3.geoPath().projection(projection);
+                // const nation = topojson.feature(county10m, county10m.objects.nation);
+                // const statesMesh = topojson.mesh(county10m, county10m.objects.states);
     
 
-                //usmap.selectAll("path.county").data(county.features)
+
+                // usmap.selectAll("path.nation").data(nation.features)
+                //     .join("path")
+                //     .attr("class", "nation")
+                //     .attr("d", path);
+
+                //refugee data
+
+                //pick topographic features 
+                var countries = topojson.feature(worldmap, worldmap.objects.countries);
+                var countriesMesh = topojson.mesh(worldmap, worldmap.objects.countries);
+
+                const projection_world = d3.geoMercator().fitSize([width, height], countries)
+                //var projection = d3.geoAlbersUsa().fitSize([mapWidth, mapHeight], states)
+
+                const path_world= d3.geoPath().projection(projection_world);
+                
+                const graticule = d3.geoGraticule10();
+
+                usmap.selectAll("path.country").data(countries.features)
+                    .join("path")
+                    .attr("class", "country")
+                    .attr("d", path_world);
+
 
             
             }
