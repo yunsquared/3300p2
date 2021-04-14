@@ -103,9 +103,15 @@
                     .attr("class", "outline")
                     .attr("d", path_world);
 
+                //add refugee csv data 
+
+                const popData = await d3.csv("../datasets/population.csv");
+                const solutionsData = await d3.csv("../datasets/solutions.csv");
+
+                console.log(popData);
+                console.log(solutionsData);
 
 
-            
             }
             requestData();
 
