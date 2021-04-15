@@ -51,7 +51,7 @@
 
                 //const senateNodes = await d3.csv("senate.109.rollcall.nodes.csv");
 
-                const broadband = await d3.csv("../datasets/broadband_data.csv");
+                //const broadband = await d3.csv("../datasets/broadband_data.csv");
                 
                 const countymap = await d3.json("../datasets/countymap.json");
 
@@ -61,7 +61,7 @@
 
                 const globe = await d3.json("../datasets/countries-110m.json");
 
-                console.log(broadband);
+                //console.log(broadband);
                 console.log(countymap);
                 console.log(county10m);
                 console.log(refugee);
@@ -108,48 +108,57 @@
                 const popData = await d3.csv("../datasets/population-clean.csv");
                 const solutionsData = await d3.csv("../datasets/solutions-clean.csv");
 
-                console.log(popData);
+                //console.log(popData);
+
+                const countries2013 = await d3.json("../datasets/countries-2013-3.json");
+                const countries2014 = await d3.json("../datasets/countries-2014.json");
+
+                console.log(countries2013);
+                console.log(countries2014);
+                
+
+
                 
                 //filter data 
 
-                popData.forEach( d=> {
-                        d['number_refugees'] = Number( d['number_refugees'] )
-                        d['number_asylum'] = Number( d['number_asylum'])
-                        d['idps_concern'] = Number( d['idps_concern'])
-                        d['stateless'] = Number( d['stateless'])
-                    })
+                // popData.forEach( d=> {
+                //         d['number_refugees'] = Number( d['number_refugees'] )
+                //         d['number_asylum'] = Number( d['number_asylum'])
+                //         d['idps_concern'] = Number( d['idps_concern'])
+                //         d['stateless'] = Number( d['stateless'])
+                //     })
                
-                console.log(popData);
+                // console.log(popData);
 
                 //build color scale 
 
-                let colorMatrix = [ ["#e8e8e8", "#ace4e4", "#5ac8c8"],
-                        ["#dfb0d6", "#a5add3", "#5698b9"],
-                        ["#be64ac", "#8c62aa", "#3b4994"] ];
+                // let colorMatrix = [ ["#e8e8e8", "#ace4e4", "#5ac8c8"],
+                //         ["#dfb0d6", "#a5add3", "#5698b9"],
+                //         ["#be64ac", "#8c62aa", "#3b4994"] ];
 
-                let biodiversityColors = ["#eb3434", "#fc9292", "#fcecd4", "#abddff", "#3853ff"];
+                // let biodiversityColors = ["#eb3434", "#fc9292", "#fcecd4", "#abddff", "#3853ff"];
             
-                let refugeeVals = d3.map(popData, d => d.number_refugees);
-                let asylumVals = d3.map(popData, d => d.number_asylum);
+                // let refugeeVals = d3.map(popData, d => d.number_refugees);
+                // let asylumVals = d3.map(popData, d => d.number_asylum);
                 
                 
-                let refugeeScale = d3.scaleQuantile().domain(refugeeVals).range(biodiversityColors);  //quantile will become 0th index, middle value is 1 index 
-                let asylumScale = d3.scaleQuantile().domain(asylumVals).range(biodiversityColors); 
+                // let refugeeScale = d3.scaleQuantile().domain(refugeeVals).range(biodiversityColors);  //quantile will become 0th index, middle value is 1 index 
+                // let asylumScale = d3.scaleQuantile().domain(asylumVals).range(biodiversityColors); 
 
-                worldmap.selectAll("path.countries").data(countries.features)
-                        .join("path")
-                        .attr("class", "countries")
-                        .attr("d", path_world)
-                        .attr("fill", d => refugeeScale( d.number_refugees) );
+                // worldmap.selectAll("path.countries").data(countries.features)
+                //         .join("path")
+                //         .attr("class", "countries")
+                //         .attr("d", path_world)
+                //         .attr("fill", d => refugeeScale( d.number_refugees) );
 
-                worldmap.append("path").datum(countriesMesh)
-                        .attr("class", "countries")
-                        .attr("d", path_world);
+                // worldmap.append("path").datum(countriesMesh)
+                //         .attr("class", "countries")
+                //         .attr("d", path_world);
                     
                 
-                worldmap.append("path").datum(countriesMesh)
-                        .attr("class", "outline")
-                        .attr("d", path_world);
+                // worldmap.append("path").datum(countriesMesh)
+                //         .attr("class", "outline")
+                //         .attr("d", path_world);
 
             }
             requestData();
