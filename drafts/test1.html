@@ -83,6 +83,9 @@
                 var countries = topojson.feature(globe, globe.objects.countries);
                 var countriesMesh = topojson.mesh(globe, globe.objects.countries);
 
+                //fit size cut out antartica 
+                //fit extent 
+                //fit clip 
                 const projection_world = d3.geoMercator().fitSize([width, height], countries)
                 //var projection = d3.geoAlbersUsa().fitSize([mapWidth, mapHeight], states)
 
@@ -110,14 +113,11 @@
 
                 //console.log(popData);
 
-                const countries2013 = await d3.json("../datasets/countries-2013-3.json");
+                const countries2013 = await d3.json("../datasets/countries-2013.json");
                 const countries2014 = await d3.json("../datasets/countries-2014.json");
 
                 console.log(countries2013);
                 console.log(countries2014);
-                
-
-
                 
                 //filter data 
 
@@ -140,7 +140,12 @@
             
                 // let refugeeVals = d3.map(popData, d => d.number_refugees);
                 // let asylumVals = d3.map(popData, d => d.number_asylum);
+
+                let refugeeVals = d3.map(countries2013, d=>d.totals[0].total_refugees);
+                let asylumVals = d3.map(countries2013, d=>d.total_asylum);
                 
+                console.log(refugeeVals)
+                console.log(asylumVals)
                 
                 // let refugeeScale = d3.scaleQuantile().domain(refugeeVals).range(biodiversityColors);  //quantile will become 0th index, middle value is 1 index 
                 // let asylumScale = d3.scaleQuantile().domain(asylumVals).range(biodiversityColors); 
