@@ -137,12 +137,9 @@
                 //         ["#be64ac", "#8c62aa", "#3b4994"] ];
 
                 // let biodiversityColors = ["#eb3434", "#fc9292", "#fcecd4", "#abddff", "#3853ff"];
-            
-                // let refugeeVals = d3.map(popData, d => d.number_refugees);
-                // let asylumVals = d3.map(popData, d => d.number_asylum);
 
                 let refugeeVals = d3.map(countries2013, d=>d.totals[0].total_refugees);
-                let asylumVals = d3.map(countries2013, d=>d.total_asylum);
+                let asylumVals = d3.map(countries2013, d=>d.totals[0].total_asylum);
                 
                 console.log(refugeeVals)
                 console.log(asylumVals)
