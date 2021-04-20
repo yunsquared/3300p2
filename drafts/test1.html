@@ -47,23 +47,25 @@
             const requestData = async function() {
                 //load datasets 
 
-                //const senateEdges = await d3.csv("senate.109.rollcall.edges.csv");
-
-                //const senateNodes = await d3.csv("senate.109.rollcall.nodes.csv");
-
                 //const broadband = await d3.csv("../datasets/broadband_data.csv");
                 
-                const countymap = await d3.json("../datasets/countymap.json");
+                //const countymap = await d3.json("../datasets/countymap.json");
 
-                const county10m = await d3.json("../datasets/counties-10m.json");
+                //const county10m = await d3.json("../datasets/counties-10m.json");
 
                 const refugee = await d3.json("../datasets/refugee.json");
 
                 const globe = await d3.json("../datasets/countries-110m.json");
 
+                const countries2013 = await d3.json("../datasets/countries-2013.json");
+                const countries2014 = await d3.json("../datasets/countries-2014.json");
+
+                console.log(countries2013);
+                console.log(countries2014);
+
                 //console.log(broadband);
-                console.log(countymap);
-                console.log(county10m);
+                //console.log(countymap);
+                //console.log(county10m);
                 console.log(refugee);
                 console.log(globe);
 
@@ -82,6 +84,8 @@
                 //pick topographic features 
                 var countries = topojson.feature(globe, globe.objects.countries);
                 var countriesMesh = topojson.mesh(globe, globe.objects.countries);
+
+                console.log(countries);
 
                 //fit size cut out antartica 
                 //fit extent 
@@ -113,11 +117,7 @@
 
                 //console.log(popData);
 
-                const countries2013 = await d3.json("../datasets/countries-2013.json");
-                const countries2014 = await d3.json("../datasets/countries-2014.json");
-
-                console.log(countries2013);
-                console.log(countries2014);
+                
                 
                 //filter data 
 
@@ -138,29 +138,63 @@
 
                 // let biodiversityColors = ["#eb3434", "#fc9292", "#fcecd4", "#abddff", "#3853ff"];
 
+                
                 let refugeeVals = d3.map(countries2013, d=>d.totals[0].total_refugees);
                 let asylumVals = d3.map(countries2013, d=>d.totals[0].total_asylum);
                 
                 console.log(refugeeVals)
                 console.log(asylumVals)
-                
-                // let refugeeScale = d3.scaleQuantile().domain(refugeeVals).range(biodiversityColors);  //quantile will become 0th index, middle value is 1 index 
-                // let asylumScale = d3.scaleQuantile().domain(asylumVals).range(biodiversityColors); 
 
-                // worldmap.selectAll("path.countries").data(countries.features)
-                //         .join("path")
-                //         .attr("class", "countries")
-                //         .attr("d", path_world)
-                //         .attr("fill", d => refugeeScale( d.number_refugees) );
+                //create look up table, based on name of country 
+                refugeeByCountry = {};
+                countries2013.forEach( d=> {
+                    refugeeByCountry[d.country] = d;
+                });
+                console.log("refugee by country");
+                console.log(refugeeByCountry);
 
-                // worldmap.append("path").datum(countriesMesh)
-                //         .attr("class", "countries")
-                //         .attr("d", path_world);
-                    
+                //add refugee and asylum values to topojson properties 
+                countries.features.forEach( d => {
+                    country_name = d.properties.name;
+                    if (country_name in refugeeByCountry) {
+                        d.properties.refugee_total = refugeeByCountry[country_name].totals[0].total_refugees;
+                        d.properties.asylum_total = refugeeByCountry[country_name].totals[0].total_asylum;
+                    }
+                    else {
+                        d.properties.refugee_total = null;
+                        d.properties.asylum_total = null;
+                    }
+
+                });
+                console.log(countries);
+
+                //coloring the map by refugee num 
+
+                let refugeeColors= [ "#e8e8e8", "#ace4e4", "#5ac8c8" ];
+
+                const refugeeScale = d3.scaleQuantile().domain(refugeeVals).range([0,1,2]);
+                const asylumScale = d3.scaleQuantile().domain(asylumVals).range([0,1,2]);
+
+                console.log(refugeeScale);
+
+                worldmap.selectAll("path.refugee").data(countries.features)
+                        .join("path")
+                        .attr("class", "refugee")
+                        .attr("d", path_world)
+                        .attr("fill", d=> {
+                            let refugeeIndex = refugeeScale(d.properties.refugee_total);
+                            let asylumIndex = asylumScale(d.properties.asylum_total);
+                            if (refugeeIndex === undefined | asylumIndex ===undefined) {
+                                return ""; //no fill 
+                            }
+                            else { 
+                                return refugeeColors[refugeeIndex];
+                            }
+                        });
+                worldmap.append("path").datum(countriesMesh)
+                        .attr("class", "outline")
+                        .attr("d", path_world);
                 
-                // worldmap.append("path").datum(countriesMesh)
-                //         .attr("class", "outline")
-                //         .attr("d", path_world);
 
             }
             requestData();
