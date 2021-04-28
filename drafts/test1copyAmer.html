@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>yw458 awi3 3300 P2 Project</title>
+        <script src="https://d3js.org/d3.v6.min.js"></script>
+        <script src="https://d3js.org/topojson.v3.min.js"></script>
+    </head>
+
+    <style>
+        .country {
+            fill: lightgrey;
+        }
+
+        .outline {
+            stroke: black;
+            stroke-width: 1px;
+            fill: none;
+        }
+
+        .mouseover {
+            stroke-width: 3px;
+        }
+
+        .graticule {
+            fill: none;
+            stroke: grey;
+            stroke-width: 1px;
+        }
+
+        .legend span {
+         margin-left: 10px;
+
+        }
+
+
+        header{
+          font-family:"Roboto", sans-serif;
+          padding:50px;
+          background: #e4e7ed;
+
+        }
+        .title h1{
+          color: #606266;
+          margin: 0;
+          font-size: 40px;
+          text-transform: uppercase;
+          font-weight: 900;
+        }
+
+        body{
+          background: #e4e7ed;
+        }
+        .worldLegend{
+          background-color:white
+        }
+
+    </style>
+    <header>
+      <div class="title">
+        <h1>UNHCR Refugee Asylum Data 2010-2020</h1>
+        <hr>
+        </div>
+    </header>
+    <body>
+
+
+
+        <svg id="world-map" height = "1200" width="2000" style="border: 1px solid lightgray;"></svg>
+
+
+        <div id="worldLegend" class="legend"> </div>
+
+        <!-- make second svg to call second function on -->
+        <svg id="world-map2" height = "1200" width="2000" style="border: 1px solid lightgray;"></svg>
+
+        <script>
+            const world = d3.select("#world-map");
+            const width = world.attr("width");
+            const height = world.attr("height");
+
+            const worldmap= world.append("g");
+
+            // function drawSecondMap("#world-map2") { //takes in svg?
+
+
+
+
+
+            // }
+
+
+            const requestData = async function() {
+                //load datasets
+
+                //const broadband = await d3.csv("../datasets/broadband_data.csv");
+
+                //const countymap = await d3.json("../datasets/countymap.json");
+
+                //const county10m = await d3.json("../datasets/counties-10m.json");
+
+                const refugee = await d3.json("../datasets/refugee.json");
+
+                const globe = await d3.json("../datasets/countries-110m.json");
+
+                const countries2013 = await d3.json("../datasets/countries-2013-new.json");
+                const countries2014 = await d3.json("../datasets/countries-2014-new.json");
+
+                console.log(countries2013);
+                console.log(countries2014);
+
+                //console.log(broadband);
+                //console.log(countymap);
+                //console.log(county10m);
+                console.log(refugee);
+                console.log(globe);
+
+                // const projection = d3.geoAlbersUsa().scale(1300).translate([500,400]);
+                // const path = d3.geoPath().projection(projection);
+                // const nation = topojson.feature(county10m, county10m.objects.nation);
+                // const statesMesh = topojson.mesh(county10m, county10m.objects.states);
+
+                // usmap.selectAll("path.nation").data(nation.features)
+                //     .join("path")
+                //     .attr("class", "nation")
+                //     .attr("d", path);
+
+                //refugee data
+
+                //pick topographic features
+                var countries = topojson.feature(globe, globe.objects.countries);
+                var countriesMesh = topojson.mesh(globe, globe.objects.countries);
+
+                console.log(countries);
+
+                //fit size cut out antartica
+                //fit extent
+                //fit clip
+                const projection_world = d3.geoMercator().fitSize([width, height], countries)
+                //var projection = d3.geoAlbersUsa().fitSize([mapWidth, mapHeight], states)
+
+                const path_world= d3.geoPath().projection(projection_world);
+
+                const graticule = d3.geoGraticule10();
+                worldmap.append("path").datum(graticule)
+                    .attr("class", "graticule")
+                    .attr("d", path_world);
+
+                //draw country outlines
+                worldmap.selectAll("path.country").data(countries.features)
+                    .join("path")
+                    .attr("class", "country")
+                    .attr("d", path_world);
+
+                worldmap.append("path").datum(countriesMesh) //add the mesh , collection of all the states' outlines, can be restyled depending on css
+                    .attr("class", "outline")
+                    .attr("d", path_world);
+
+                //add refugee csv data
+
+
+
+                let refugeeVals = d3.map(countries2013, d=>d.totals[0].total_refugees);
+                let asylumVals = d3.map(countries2013, d=>d.totals[0].total_asylum);
+
+                console.log(refugeeVals)
+                console.log(asylumVals)
+
+                //create look up table, based on name of country
+                refugeeByCountry = {};
+                countries2013.forEach( d=> {
+                    refugeeByCountry[d.country] = d;
+                });
+                console.log("refugee by country");
+                console.log(refugeeByCountry);
+
+                //add refugee and asylum values to topojson properties
+                countries.features.forEach( d => {
+                    country_name = d.properties.name;
+                    if (country_name in refugeeByCountry) {
+                        d.properties.refugee_total = refugeeByCountry[country_name].totals[0].total_refugees;
+                        d.properties.asylum_total = refugeeByCountry[country_name].totals[0].total_asylum;
+                        d.properties.destination_countries = refugeeByCountry[country_name].destination_r; //array
+
+                    }
+                    else {
+                        d.properties.refugee_total = null;
+                        d.properties.asylum_total = null;
+                        d.properties.destination_countries = null;
+                    }
+
+                });
+                console.log("new features");
+                console.log(countries);
+
+
+
+                //coloring the map by refugee num
+
+              //  let refugeeColors= [ "#e8e8e8", "#ace4e4", "#5ac8c8" ];
+              let refugeeColors= [ "#cfe7ff", "#b3d9ff", "#87c3ff", '#6bb5ff', "#2e96ff"];
+
+                // const refugeeScale = d3.scaleQuantile().domain(refugeeVals).range([0,1,2]);
+                // const asylumScale = d3.scaleQuantile().domain(asylumVals).range([0,1,2]);
+
+          const refugeeScale = d3.scaleQuantile().domain(refugeeVals).range([0,1,2,3,4]);
+           const asylumScale = d3.scaleQuantile().domain(asylumVals).range([0,1,2,3,4]);
+
+
+                console.log(refugeeScale);
+
+                //draw states and outlines
+
+                worldmap.selectAll("path.countries").data(countries.features)
+                        .join("path")
+                        .attr("class", "countries")
+                        .attr("id", d => d.properties.name)
+                        .attr("d", path_world)
+                        .attr("fill", d=> {
+                            let refugeeIndex = refugeeScale(d.properties.refugee_total);
+                            let asylumIndex = asylumScale(d.properties.asylum_total);
+
+                            if (refugeeIndex === undefined | asylumIndex ===undefined) {
+                                return ""; //no fill
+                            }
+                            else {
+                                return refugeeColors[refugeeIndex];
+                            }
+                        });
+                worldmap.append("path").datum(countriesMesh)
+                        .attr("class", "outline")
+                        .attr("d", path_world);
+
+
+                //create mouseover legend
+                let originCountries = ['Syria', 'Venezuela', 'Russia', 'Turkey', 'United States of America'];
+
+                let legend = world.append("g")
+                                .attr("class", "legend")
+                                .attr("stroke-width",2.0);
+
+
+
+                originCountries.forEach( function(d, i) {
+                    //console.log(d);
+                    d3.select("#worldLegend")
+                        .append("span")
+                        .text(d)
+                        .style("font-family","Roboto, sans-serif")
+                        .style("color", "#606266")
+                        .on("click", function() {
+                            d3.selectAll("#world-map country").each( function() { //are id's needed?
+                                let element = d3.select(this);
+
+                                    console.log(element);
+
+                                if(element.attr("name") === d) {
+                                    //matches
+                                    element.attr("opacity", 0.7);
+                                }
+                                else {
+                                    element.attr("opacity", 1);
+                                }
+
+                            });
+
+                        });
+
+                });
+
+                //scroll bar
+
+
+                //second view
+                //consider making functions for draw first map and draw second map
+
+
+
+
+
+
+
+
+
+                //tool tip
+                let momesh = worldmap.append("path").attr("class", "mouseover outline").attr("d", "");
+
+                let tooltipWidth = 375;
+                let tooltipHeight = 375;
+
+                let tooltip = world.append("g")
+                                    .attr("class", "tooltip")
+                                    .attr("visibility", "hidden");
+
+                tooltip.append("rect")
+                        .attr("fill", "#87c3ff")
+                        .attr("opacity", 0.8)
+                        .attr("x", 0)
+                        .attr("y", 0)
+                        .attr("width", tooltipWidth)
+                        .attr("height", tooltipHeight)
+
+              let tt_border = world.append("g")
+                                  .attr("class","tt_border");
+              tt_border.append("rect")
+                .attr("fill","none")
+                .attr("stroke","black")
+                .attr("stroke-width","5")
+                .attr("opacity",0.9)
+                .attr("x", 2.5)
+                .attr("y", 2.5)
+                .attr("width", tooltipWidth-5)
+                .attr("height", tooltipHeight)
+
+
+
+
+                let txt_country = tooltip.append("text")
+                                .attr("fill", "black")
+                                .attr("text-anchor", "left")
+                                .attr("alignment-baseline", "hanging")
+                                .attr("x", 20)
+                                .attr("y", 20)
+                                .attr("font-size", "2em");
+
+                let label_stats = tooltip.append("text")
+                                .attr("fill", "black")
+                                .attr("text-anchor", "left")
+                                .attr("alignment-baseline", "hanging")
+                                .attr("x", 20)
+                                .attr("y", 60);
+                label_stats.text("Number of Refugees : ");
+
+                let txt_stats = tooltip.append("text")
+                                            .attr("fill", "black")
+                                            .attr("text-anchor", "left")
+                                            .attr("alignment-baseline", "hanging")
+                                            .attr("x", 300)
+                                            .attr("y", 60);
+
+                let label_stats2 = tooltip.append("text")
+                                            .attr("fill", "black")
+                                            .attr("text-anchor", "left")
+                                            .attr("alignment-baseline", "hanging")
+                                            .attr("x", 20)
+                                            .attr("y", 80);
+                label_stats2.text("Number of Asylum Seekers : ");
+
+                let txt_stats2 = tooltip.append("text")
+                                            .attr("fill", "black")
+                                            .attr("text-anchor", "left")
+                                            .attr("alignment-baseline", "hanging")
+                                            .attr("x", 300)
+                                            .attr("y", 80);
+
+                let txt_destinations = tooltip.append("text")
+                                            .attr("fill", "black")
+                                            .attr("text-anchor", "left")
+                                            .attr("alignment-baseline", "hanging")
+                                            .attr("x", 20)
+                                            .attr("y", 100);
+                                            //check the body of the forloop
+
+
+                let colorlegend = worldmap.append("g").attr("class","colorlegend")
+                .attr("transform","translate(0,400)");
+
+                for (let i=0; i<refugeeColors.length; i++){
+                  colorlegend.append("rect")
+                  .attr("x",i*375/refugeeColors.length)
+                  .attr("y",30)
+                  .attr("width",375/refugeeColors.length)
+                  .attr("height",200)
+                  .attr("fill",refugeeColors[i])
+                  .attr("stroke","black")
+                }
+
+
+
+                //mouseovers
+                d3.selectAll(".countries").on("mouseenter", mouseEntersPlot);
+
+                d3.selectAll(".countries").on("mouseout", mouseLeavesPlot);
+
+                function mouseEntersPlot() {
+                    //console.log("enter")
+                    tooltip.style("visibility", "visible");
+
+                    let state = d3.select(this);
+
+                    //write function receiving the selected element
+                    //call function within mouseover, drawSecondMap function
+
+                    //update colors in function based on dictionaries of destination received
+
+                    console.log(state.datum() )
+
+                    let selected_country = state.datum().properties.name;
+                    let selected_refugees = state.datum().properties.refugee_total;
+                    let selected_asylums = state.datum().properties.asylum_total;
+                    let selected_destinations = state.datum().properties.destination_countries;
+
+                    console.log(selected_country);
+
+                    //console.log((Object.keys(selected_destinations[0]))[0]);
+
+                    //console.log(Object.values(selected_destinations[0]));
+
+                    //console.log((Object.values(selected_destinations[0]))[0][1]);
+
+                    destinationsDict = {};
+
+                    for (var i=0; i < selected_destinations.length; i++) {
+                        destinationsDict[(Object.keys(selected_destinations[i]))[0]] =  (Object.values(selected_destinations[i]))[0];
+
+                    }
+
+                    console.log(destinationsDict);
+
+
+                    //feedback
+                    let mo = topojson.mesh(globe, globe.objects.countries,
+                                                    function(a,b) { return a.name === selected_country || b.name === selected_country}
+                                                    );
+                    momesh.datum(mo).attr("d", path_world);
+
+                    txt_country.text(selected_country)
+                    txt_stats.text(selected_refugees)
+                    txt_stats2.text(selected_asylums)
+
+                    //print out destination countries...via for loop?
+                    txt_destinations.text(Object.keys(destinationsDict))
+
+                }
+
+                function mouseLeavesPlot() {
+                    tooltip.style("visibility", "hidden")
+
+                    let selected_country = d3.select(this);
+
+                    momesh.attr("d", "");
+                }
+
+
+            }
+
+            requestData();
+
+
+        </script>
+
+    </body>
+</html>
