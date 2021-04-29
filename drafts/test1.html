@@ -41,20 +41,21 @@
         }
 
         .legend .button {
-            background-color: blueviolet;
+            background-color:#e4e7ed;
             border-width: 2px;
             border-color: black;
+            font-size: 16;
 
         }
       
         .button:hover {
-            background-color: yellow;
+            background-color: greenyellow;
 
 
         }
 
         .button:active {
-            background-color: red;
+            background-color: green;
         }
 
         .selected {
@@ -84,7 +85,10 @@
     
             <svg id="world-map" height = "900" width="1100"></svg>
             <svg id="world-map2" height = "400" width="600" style="border: 1px solid lightgray;"></svg>
+            
         </div>
+
+            
 
         <div id="worldLegend" class="legend"> </div>
         <script>
@@ -196,7 +200,7 @@
                     solutionsByCountry[d.country] = d;
                 });
                 console.log("refugee by solution");
-                console.log(solutionsByCountry.length);
+                console.log(solutionsByCountry);
 
                 //add refugee and asylum values to topojson properties 
                 countries.features.forEach( d => {
@@ -209,21 +213,37 @@
                         d.properties.destination_refugees = refugeeByCountry[country_name].destination_refugees;
                         d.properties.destination_pairs = refugeeByCountry[country_name].destination_pairs;
 
-                        
-                        //d.properties.resettled= solutionsByCountry[country_name].resettlement;
-                        // d.properties.returned_refugees = solutionsByCountry[country_name].returned_refugees; 
-                        // d.properties.naturalized = solutionsByCountry[country_name].naturalized;
-                        
-                        //d.properties.destination_countries = refugeeByCountry[country_name].destination_r; //array 
-                
                     }
                     else {
                         d.properties.refugee_total = null;
                         d.properties.asylum_total = null;
                         d.properties.destination_countries = null;
                     }
+                    
+                    // if (country_name in solutionsByCountry) {
+
+                    //     d.properties.returned_refugees = solutionsByCountry[country_name].returned_refugees; 
+                        
+                    //     d.properties.resettled= solutionsByCountry[country_name].resettlement;
+                     
+                    //     d.properties.naturalized = solutionsByCountry[country_name].naturalized;
+                        
+                    //     //d.properties.destination_countries = refugeeByCountry[country_name].destination_r; //array 
+                
+                    // }
+                    // else {
+                    //     d.properties.returned_refugees = null;
+                    // }
+
+                    
+                    
 
                 });
+
+
+                
+
+
                 console.log("new features");
                 console.log(countries);
 
@@ -330,8 +350,8 @@
                 //tool tip
                 let momesh = worldmap.append("path").attr("class", "mouseover outline").attr("d", "");
                 
-                let tooltipWidth = 300;
-                let tooltipHeight = 300;
+                let tooltipWidth = 200;
+                let tooltipHeight = 200;
 
                 let tooltip = world.append("g")
                                     .attr("class", "tooltip")
@@ -558,8 +578,8 @@
 
                 let bottomAxis = d3.axisBottom()
                 let bottomAxisG = annotations.append("g")
-                           .attr("class", "clear")
-                           .attr("transform",`translate(${margin.left},${chartHeight+margin.top+10})`)
+                           .attr("visibility", "hidden");
+                          
                           
                          //  Don't use .call() for a blank axis
 
