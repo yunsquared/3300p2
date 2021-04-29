@@ -18,10 +18,12 @@
             stroke: black;
             stroke-width: 1px;
             fill: none;
+
         }
 
         .mouseover {
             stroke-width: 3px;
+
         }
 
         .graticule {
@@ -30,12 +32,34 @@
             stroke-width: 1px;
         }
 
+
+
         .legend span {
          margin-left: 10px;
 
+
         }
 
+        .legend .button {
+            background-color: blueviolet;
+            border-width: 2px;
+            border-color: black;
 
+        }
+
+        .button:hover {
+            background-color: yellow;
+
+
+        }
+
+        .button:active {
+            background-color: red;
+        }
+
+        .selected {
+            fill: yellow;
+        }
         header{
           font-family:"Roboto", sans-serif;
           padding:50px;
@@ -58,6 +82,7 @@
         }
 
     </style>
+
     <header>
       <div class="title">
         <h1>UNHCR Refugee Asylum Data 2010-2020</h1>
@@ -67,14 +92,13 @@
     <body>
 
 
-
-        <svg id="world-map" height = "1200" width="2000" style="border: 1px solid lightgray;"></svg>
+        <svg id="world-map" height = "800" width="1200" style="border: 1px solid lightgray;"></svg>
 
 
         <div id="worldLegend" class="legend"> </div>
 
         <!-- make second svg to call second function on -->
-        <svg id="world-map2" height = "1200" width="2000" style="border: 1px solid lightgray;"></svg>
+        <svg id="world-map2" height = "600" width="1000" style="border: 1px solid lightgray;"></svg>
 
         <script>
             const world = d3.select("#world-map");
@@ -83,23 +107,41 @@
 
             const worldmap= world.append("g");
 
-            // function drawSecondMap("#world-map2") { //takes in svg?
+            //second viz
+
+            const svg2 = d3.select("svg#world-map2");
+            const width2 = svg2.attr("width");
+            const height2 = svg2.attr("height");
+
+            const world_graph = svg2.append("g");
+
+            const margin = {top: 10, right: 10, bottom: 50, left: 50};
+
+            const chartWidth = width2 - margin.left - margin.right;
+            const chartHeight = height2 - margin.top - margin.bottom;
+
+            let annotations = svg2.append("g").attr("id","annotations");
+                  // No translate here since our annotations may be outside of the chart area
+
+            let chartArea = svg2.append("g").attr("id","points")
+                  .attr("transform","translate("+margin.left+","+margin.top+")");
+
+            d3.select("#label").raise();
 
 
+            function drawSecondMap() { //takes in svg?
+                // const svg2 = d3.select("svg#world-map2");
+                // const width2 = svg2.attr("width");
+                // const height2 = svg2.attr("height");
 
+                //var countries = topojson.feature(globe, globe.objects.countries);
+                //var countriesMesh = topojson.mesh(globe, globe.objects.countries);
 
-
-            // }
+            }
 
 
             const requestData = async function() {
                 //load datasets
-
-                //const broadband = await d3.csv("../datasets/broadband_data.csv");
-
-                //const countymap = await d3.json("../datasets/countymap.json");
-
-                //const county10m = await d3.json("../datasets/counties-10m.json");
 
                 const refugee = await d3.json("../datasets/refugee.json");
 
@@ -111,23 +153,10 @@
                 console.log(countries2013);
                 console.log(countries2014);
 
-                //console.log(broadband);
-                //console.log(countymap);
-                //console.log(county10m);
                 console.log(refugee);
                 console.log(globe);
 
                 // const projection = d3.geoAlbersUsa().scale(1300).translate([500,400]);
-                // const path = d3.geoPath().projection(projection);
-                // const nation = topojson.feature(county10m, county10m.objects.nation);
-                // const statesMesh = topojson.mesh(county10m, county10m.objects.states);
-
-                // usmap.selectAll("path.nation").data(nation.features)
-                //     .join("path")
-                //     .attr("class", "nation")
-                //     .attr("d", path);
-
-                //refugee data
 
                 //pick topographic features
                 var countries = topojson.feature(globe, globe.objects.countries);
@@ -161,12 +190,14 @@
                 //add refugee csv data
 
 
-
                 let refugeeVals = d3.map(countries2013, d=>d.totals[0].total_refugees);
                 let asylumVals = d3.map(countries2013, d=>d.totals[0].total_asylum);
 
                 console.log(refugeeVals)
                 console.log(asylumVals)
+
+                //const refugeeScale = d3.scaleLog().domain(refugeeVals).range([chartHeight, 0]);
+
 
                 //create look up table, based on name of country
                 refugeeByCountry = {};
@@ -182,7 +213,10 @@
                     if (country_name in refugeeByCountry) {
                         d.properties.refugee_total = refugeeByCountry[country_name].totals[0].total_refugees;
                         d.properties.asylum_total = refugeeByCountry[country_name].totals[0].total_asylum;
-                        d.properties.destination_countries = refugeeByCountry[country_name].destination_r; //array
+                        d.properties.destination_countries = refugeeByCountry[country_name].destination_countries;
+                        d.properties.destination_refugees = refugeeByCountry[country_name].destination_refugees;
+                        d.properties.destination_pairs = refugeeByCountry[country_name].destination_pairs;
+                        //d.properties.destination_countries = refugeeByCountry[country_name].destination_r; //array
 
                     }
                     else {
@@ -199,24 +233,95 @@
 
                 //coloring the map by refugee num
 
-              //  let refugeeColors= [ "#e8e8e8", "#ace4e4", "#5ac8c8" ];
-              let refugeeColors= [ "#cfe7ff", "#b3d9ff", "#87c3ff", '#6bb5ff', "#2e96ff"];
+                let refugeeColors= [ "#cfe7ff", "#b3d9ff", "#87c3ff", '#6bb5ff', "#2e96ff"];
+                //let refugeeScale = d3.scaleOrdinal(d3.schemeCategory10);
 
-                // const refugeeScale = d3.scaleQuantile().domain(refugeeVals).range([0,1,2]);
+                const refugeeScale = d3.scaleQuantile().domain(refugeeVals).range([0,1,2,3,4]);
+                const asylumScale = d3.scaleQuantile().domain(asylumVals).range([0,1,2,3,4]);
+
+                // const refugeeScale = d3.scaleLinear().domain(refugeeVals).range([0,1,2]);
                 // const asylumScale = d3.scaleQuantile().domain(asylumVals).range([0,1,2]);
 
-          const refugeeScale = d3.scaleQuantile().domain(refugeeVals).range([0,1,2,3,4]);
-           const asylumScale = d3.scaleQuantile().domain(asylumVals).range([0,1,2,3,4]);
-
-
                 console.log(refugeeScale);
+
+                let originCountries = ['Syria', 'Venezuela', 'Albania', 'Turkey', 'Laos'];
+
+                let legend = world.append("g")
+                                .attr("class", "legend")
+
+
+
+                originCountries.forEach( function(d, i) {
+                    //console.log(d);
+                    d3.select("#worldLegend")
+                        .append("span")
+                        .attr("class", "button")
+                        .text(d)
+                        .style("color", "green")
+                        .on("click", function() {
+                            d3.selectAll("#world-map .countries").each( function() { //are id's needed?
+                                let state = d3.select(this);
+
+                                let selected_country = state.datum().properties.name;
+                                //let selected_refugees = state.datum().properties.refugee_total;
+                                //let selected_asylums = state.datum().properties.asylum_total;
+                                let selected_destinations = state.datum().properties.destination_countries;
+                                //console.log("dest countries");
+                                //console.log(selected_destinations);
+
+                                if(state.attr("id") === d) {
+
+                                    //matches
+                                    state.attr("fill", 'red');
+
+
+                                }
+                                else {
+                                    //element.attr("opacity", 0.5);
+                                    state.attr("fill", d => {
+                                        let refugeeIndex = refugeeScale(d.properties.refugee_total);
+                                        let asylumIndex = asylumScale(d.properties.asylum_total);
+
+                                        if (refugeeIndex === undefined | asylumIndex ===undefined) {
+                                            return ""; //no fill
+                                        }
+                                        else {
+                                            return refugeeColors[refugeeIndex];
+                                        }
+
+                                    });
+
+                                }
+
+                                // if(state.attr("id") === d ) {
+                                //     selected_destinations.attr("visibility", "");
+
+
+
+                                // }
+                                // else {
+                                //     selected_destinations.attr("visibility", "hidden");
+
+                                //     //let selected_destinations = state.datum().properties.destination_countries;
+                                //     // selected_destinations.forEach( c=> {
+                                //     //     c.attr("visibility", 'hidden');
+                                //     // })
+
+                                // }
+
+                            });
+
+                        });
+
+                });
 
                 //draw states and outlines
 
                 worldmap.selectAll("path.countries").data(countries.features)
                         .join("path")
                         .attr("class", "countries")
-                        .attr("id", d => d.properties.name)
+                        .attr("id", d => d.properties.name) //potentially do string replacement, spaces with dashes
+                        .attr("dest_id", d=>d.properties.destination_countries)
                         .attr("d", path_world)
                         .attr("fill", d=> {
                             let refugeeIndex = refugeeScale(d.properties.refugee_total);
@@ -235,73 +340,35 @@
 
 
                 //create mouseover legend
-                let originCountries = ['Syria', 'Venezuela', 'Russia', 'Turkey', 'United States of America'];
 
-                let legend = world.append("g")
-                                .attr("class", "legend")
-                                .attr("stroke-width",2.0);
-
-
-
-                originCountries.forEach( function(d, i) {
-                    //console.log(d);
-                    d3.select("#worldLegend")
-                        .append("span")
-                        .text(d)
-                        .style("font-family","Roboto, sans-serif")
-                        .style("color", "#606266")
-                        .on("click", function() {
-                            d3.selectAll("#world-map country").each( function() { //are id's needed?
-                                let element = d3.select(this);
-
-                                    console.log(element);
-
-                                if(element.attr("name") === d) {
-                                    //matches
-                                    element.attr("opacity", 0.7);
-                                }
-                                else {
-                                    element.attr("opacity", 1);
-                                }
-
-                            });
-
-                        });
-
-                });
 
                 //scroll bar
 
 
-                //second view
+                //second view, do set up beforehand
                 //consider making functions for draw first map and draw second map
 
-
-
-
-
-
+                //drawSecondMap();
 
 
 
                 //tool tip
                 let momesh = worldmap.append("path").attr("class", "mouseover outline").attr("d", "");
 
-                let tooltipWidth = 375;
-                let tooltipHeight = 375;
+                let tooltipWidth = 184;
+                let tooltipHeight = 184;
 
                 let tooltip = world.append("g")
                                     .attr("class", "tooltip")
                                     .attr("visibility", "hidden");
 
                 tooltip.append("rect")
-                        .attr("fill", "#87c3ff")
+                        .attr("fill",  "#87c3ff")
                         .attr("opacity", 0.8)
                         .attr("x", 0)
                         .attr("y", 0)
                         .attr("width", tooltipWidth)
                         .attr("height", tooltipHeight)
-
               let tt_border = world.append("g")
                                   .attr("class","tt_border");
               tt_border.append("rect")
@@ -314,69 +381,88 @@
                 .attr("width", tooltipWidth-5)
                 .attr("height", tooltipHeight)
 
-
-
-
                 let txt_country = tooltip.append("text")
                                 .attr("fill", "black")
                                 .attr("text-anchor", "left")
                                 .attr("alignment-baseline", "hanging")
-                                .attr("x", 20)
+                                .attr("x", 15)
                                 .attr("y", 20)
-                                .attr("font-size", "2em");
+                                .attr("font-size","10px")
+                                .style("font-family","Roboto, sans-serif")
+                                .style("font-weight","bold")
+                                .style("text-transform","uppercase");
 
                 let label_stats = tooltip.append("text")
                                 .attr("fill", "black")
                                 .attr("text-anchor", "left")
                                 .attr("alignment-baseline", "hanging")
-                                .attr("x", 20)
-                                .attr("y", 60);
-                label_stats.text("Number of Refugees : ");
+                                .attr("x", 15)
+                                .attr("y", 50)
+                                .style("font-family","Roboto, sans-serif")
+                                .attr("font-size","8px")
+                                .style("font-weight","bold")
+                                .style("text-transform","uppercase");
+                               label_stats.text("Number of Refugees: ");
+
 
                 let txt_stats = tooltip.append("text")
                                             .attr("fill", "black")
                                             .attr("text-anchor", "left")
                                             .attr("alignment-baseline", "hanging")
-                                            .attr("x", 300)
-                                            .attr("y", 60);
+                                            .attr("x", 155)
+                                            .attr("y", 50)
+                                            .style("font-family","Roboto, sans-serif")
+                                            .attr("font-size","8px")
+                                            .style("font-weight","bold")
+                                            .style("text-transform","uppercase");
 
                 let label_stats2 = tooltip.append("text")
                                             .attr("fill", "black")
                                             .attr("text-anchor", "left")
                                             .attr("alignment-baseline", "hanging")
-                                            .attr("x", 20)
-                                            .attr("y", 80);
-                label_stats2.text("Number of Asylum Seekers : ");
+                                            .attr("x", 15)
+                                            .attr("y", 70)
+                                            .style("font-family","Roboto, sans-serif")
+                                            .attr("font-size","8px")
+                                            .style("font-weight","bold")
+                                            .style("text-transform","uppercase");
+                                  label_stats2.text("Number of Asylum Seekers: " );
 
                 let txt_stats2 = tooltip.append("text")
                                             .attr("fill", "black")
                                             .attr("text-anchor", "left")
                                             .attr("alignment-baseline", "hanging")
-                                            .attr("x", 300)
-                                            .attr("y", 80);
+                                            .attr("x", 155)
+                                            .attr("y", 70)
+                                            .style("font-family","Roboto, sans-serif")
+                                            .attr("font-size","8px")
+                                            .style("font-weight","bold")
+                                            .style("text-transform","uppercase");
 
                 let txt_destinations = tooltip.append("text")
                                             .attr("fill", "black")
                                             .attr("text-anchor", "left")
                                             .attr("alignment-baseline", "hanging")
-                                            .attr("x", 20)
-                                            .attr("y", 100);
-                                            //check the body of the forloop
+                                            .attr("x", 15)
+                                            .attr("y", 90)
+                                            .style("font-family","Roboto, sans-serif")
+                                            .attr("font-size","8px")
+                                            .style("font-weight","bold")
+                                            .style("text-transform","uppercase");
 
 
-                let colorlegend = worldmap.append("g").attr("class","colorlegend")
-                .attr("transform","translate(0,400)");
 
-                for (let i=0; i<refugeeColors.length; i++){
-                  colorlegend.append("rect")
-                  .attr("x",i*375/refugeeColors.length)
-                  .attr("y",30)
-                  .attr("width",375/refugeeColors.length)
-                  .attr("height",200)
-                  .attr("fill",refugeeColors[i])
-                  .attr("stroke","black")
-                }
-
+              let colorlegend = worldmap.append("g").attr("class","colorlegend")
+                                            .attr("transform","translate(0,184)");
+              for (let i=0; i<refugeeColors.length; i++){
+                                              colorlegend.append("rect")
+                                              .attr("x",i*184/refugeeColors.length)
+                                              .attr("y",30)
+                                              .attr("width",184/refugeeColors.length)
+                                              .attr("height",184)
+                                              .attr("fill",refugeeColors[i])
+                                              .attr("stroke","black")
+                                            }
 
 
                 //mouseovers
@@ -401,23 +487,42 @@
                     let selected_refugees = state.datum().properties.refugee_total;
                     let selected_asylums = state.datum().properties.asylum_total;
                     let selected_destinations = state.datum().properties.destination_countries;
+                    let selected_refugee_vals = state.datum().properties.destination_refugees;
+                    let selected_refugee_pairs = state.datum().properties.destination_pairs;
 
                     console.log(selected_country);
+                    console.log(selected_destinations);
 
-                    //console.log((Object.keys(selected_destinations[0]))[0]);
+                    //for second viz barchart
+                    // const selected_refugee_scale = d3.scaleLinear().domain(selected_refugee_vals).range([chartHeight, 0]);
 
-                    //console.log(Object.values(selected_destinations[0]));
+                    //const dest_refugee_scale = d3.extent(selected_refugee_vals);
 
-                    //console.log((Object.values(selected_destinations[0]))[0][1]);
+                    // let leftAxis = d3.axisLeft(selected_refugee_scale);
+                    // let leftGridlines = d3.axisLeft(selected_refugee_scale)
+                    //                     .tickSize(-chartWidth-10)
+                    //                     .tickFormat("")
 
-                    destinationsDict = {};
+                    // annotations.append("g")
+                    //             .attr("class", "y axis")
+                    //             .attr("transform",`translate(${margin.left-10},${margin.top})`)
+                    //             .call(leftAxis)
 
-                    for (var i=0; i < selected_destinations.length; i++) {
-                        destinationsDict[(Object.keys(selected_destinations[i]))[0]] =  (Object.values(selected_destinations[i]))[0];
 
-                    }
+                    // annotations.append("g")
+                    //             .attr("class", "y gridlines")
+                    //             .attr("transform",`translate(${margin.left-10},${margin.top})`)
+                    //             .call(leftGridlines);
 
-                    console.log(destinationsDict);
+                    // The x axis is going to be changing because genres change - we need to store and adjust it
+                    // We leave xAxis as a blank axis for now, but keep the reference outside of the function so we can rewrite it
+
+                    // let bottomAxis = d3.axisBottom()
+                    // let bottomAxisG = annotations.append("g")
+                    //        .attr("class", "x axis")
+                    //        .attr("transform",`translate(${margin.left},${chartHeight+margin.top+10})`)
+                        //    Don't use .call() for a blank axis
+
 
 
                     //feedback
@@ -431,7 +536,14 @@
                     txt_stats2.text(selected_asylums)
 
                     //print out destination countries...via for loop?
-                    txt_destinations.text(Object.keys(destinationsDict))
+                    //txt_destinations.text(Object.keys(destinationsDict))
+                    txt_destinations.text(selected_destinations);
+
+                    //access destination values
+
+                    updateMap(selected_destinations, path_world);
+
+                    updateGraph(selected_destinations, selected_refugee_vals, selected_refugee_pairs);
 
                 }
 
@@ -441,10 +553,113 @@
                     let selected_country = d3.select(this);
 
                     momesh.attr("d", "");
+
+                    finishUpdate();
+
+                    finishUpdateMap();
                 }
+
+            }
+
+            function updateMap(selected_destinations, path_world) {
+                console.log("selected!!!");
+                console.log(selected_destinations);
+
+                selected_destinations.forEach( function(d,i) {
+                    console.log("destination country d");
+                    console.log(d);
+                    let replace_d = d; //do string to replace
+                    d3.select("#world-map #"+replace_d)
+                        .attr("class", "countries selected");
+                        // .attr("fill", "yellow");
+
+
+                    })
+
+            }
+
+            function finishUpdateMap() {
+                d3.selectAll("#world-map .selected")
+                    .attr("class", "countries");
+
+
 
 
             }
+
+            function updateGraph(selected_destinations, selected_refugee_vals, selected_refugee_pairs) {
+                const selected_refugee_scale = d3.scaleLinear().domain(selected_refugee_vals).range([0, chartHeight]);
+
+                let leftAxis = d3.axisLeft(selected_refugee_scale);
+
+                let leftGridlines = d3.axisLeft(selected_refugee_scale)
+                                        .tickSize(-chartWidth-10)
+                                        .tickFormat("")
+
+                annotations.append("g")
+                                .attr("class", "y axis")
+                                .attr("transform",`translate(${margin.left-10},${margin.top})`)
+                                .call(leftAxis)
+
+                annotations.append("g")
+                                .attr("class", "y gridlines")
+                                .attr("transform",`translate(${margin.left-10},${margin.top})`)
+                                .call(leftGridlines);
+
+
+                let bottomAxis = d3.axisBottom()
+                    let bottomAxisG = annotations.append("g")
+                           .attr("class", "x axis")
+                           .attr("transform",`translate(${margin.left},${chartHeight+margin.top+10})`)
+                         //  Don't use .call() for a blank axis
+
+
+
+                console.log("selected dest");
+                //console.log(selected_destinations);
+                //console.log(selected_refugee_vals);
+
+                const dest_refugee_extent = d3.extent(selected_refugee_vals);
+                const dest_refugee_scale = d3.scaleLinear().domain(dest_refugee_extent).range([chartHeight,0]);
+
+                console.log(dest_refugee_scale);
+
+                console.log(selected_destinations);
+                console.log(selected_refugee_pairs);
+
+
+                const destinationScale = d3.scaleBand().domain(selected_destinations).range([0,chartWidth])
+                                                        .padding(0.05);
+
+                bottomAxis.scale(destinationScale);
+                bottomAxisG.transition().call(bottomAxis);
+
+
+                chartArea.selectAll('rect.bar').data(selected_refugee_pairs)
+                        .join( enter => enter.append('rect')
+                                            .attr('class', 'bar')
+                                            .attr('fill', 'steelblue')
+                                            .attr('x', d => destinationScale(d[0]))
+                                            .attr("y", d => chartHeight - dest_refugee_scale(d[1]))
+                                            .attr("height", d => dest_refugee_scale(d[1])) //height is determined by value
+                                            .attr("width", destinationScale.bandwidth())
+                                            .call( enter => enter.transition().attr('opacity', 1) ),
+                                exit => exit.call(exit => exit.transition().attr('opacity', 0).remove() ) );
+
+                // svg2.append("text")
+                //     .text(selected_refugee_pairs)
+                //     .attr("y", 20);
+
+                    //do data join to svg2,
+
+
+            }
+
+            function finishUpdate() {
+                //clear the gridlines
+
+            }
+
 
             requestData();
 
