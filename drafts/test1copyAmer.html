@@ -97,13 +97,13 @@
     </header>
     <body>
 
-        <div class = "row" style = "width:2200px">
+        <div class = "row" style = "width:2400">
 
-            <svg id="world-map" height = "800" width="1200"></svg>
+            <svg id="world-map" height = "800" width="1000"></svg>
 
 
             <!-- make second svg to call second function on -->
-            <svg id="world-map2" height = "400" width="800" style="border: 1px solid lightgray;"></svg>
+            <svg id="world-map2" height = "400" width="600" style="border: 1px solid lightgray;"></svg>
         </div>
 
         <div id="worldLegend" class="legend"> </div>
@@ -135,7 +135,31 @@
             let chartArea = svg2.append("g").attr("id","points")
                   .attr("transform","translate("+margin.left+","+margin.top+")");
 
+            
+            annotations.append("g") //change / update instead of append 
+                                .attr("class", "y axis")
+                                .attr("transform",`translate(${margin.left-10},${margin.top})`);
+                         
+
+            annotations.append("g")
+                                .attr("class", "y gridlines")
+                                .attr("transform",`translate(${margin.left-10},${margin.top})`);
+                        
+
+
+            let bottomAxis = d3.axisBottom()
+            let bottomAxisG = annotations.append("g")
+                           .attr("class", "x axis")
+                           .attr("transform",`translate(${margin.left},${chartHeight+margin.top+10})`);
+                         //  Don't use .call() for a blank axis
+
+
             d3.select("#label").raise();
+
+    //         let filteredStates = ['02','15','60','66','69','72','74','78'];
+    // us.objects.states.geometries = us.objects.states.geometries.filter( d => {
+    //                       return filteredStates.indexOf( d.id.toString().padStart(2,'0')  ) === -1;
+    //                     });
 
 
             const requestData = async function() {
@@ -157,7 +181,7 @@
                 // const projection = d3.geoAlbersUsa().scale(1300).translate([500,400]);
 
                 //pick topographic features
-                var countries = topojson.feature(globe, globe.objects.countries);
+                var countries = topojson.feature(globe, globe.objects.countries); //exclude antarctica from countries 
                 var countriesMesh = topojson.mesh(globe, globe.objects.countries);
 
                 console.log(countries);
@@ -165,7 +189,8 @@
                 //fit size cut out antartica
                 //fit extent
                 //fit clip
-                const projection_world = d3.geoMercator().fitSize([width, height], countries)
+                //add filter 
+                const projection_world = d3.geoMercator().fitSize([width, height-20], countries)
                 //var projection = d3.geoAlbersUsa().fitSize([mapWidth, mapHeight], states)
 
                 const path_world= d3.geoPath().projection(projection_world);
@@ -205,6 +230,13 @@
                 console.log("refugee by country");
                 console.log(refugeeByCountry);
 
+                // solutionsByCountry = {};
+                // solutions2013sorted.forEach( d => {
+                //     solutionsByCountry[d.country] = d;
+                // });
+                // console.log("refugee by solution");
+                // console.log(solutionsByCountry);
+
                 //add refugee and asylum values to topojson properties
                 countries.features.forEach( d => {
                     country_name = d.properties.name;
@@ -222,6 +254,24 @@
                         d.properties.asylum_total = null;
                         d.properties.destination_countries = null;
                     }
+
+                      // if (country_name in solutionsByCountry) {
+
+                    //     d.properties.returned_refugees = solutionsByCountry[country_name].returned_refugees; 
+                        
+                    //     d.properties.resettled= solutionsByCountry[country_name].resettlement;
+                     
+                    //     d.properties.naturalized = solutionsByCountry[country_name].naturalized;
+                        
+                    //     //d.properties.destination_countries = refugeeByCountry[country_name].destination_r; //array 
+                
+                    // }
+                    // else {
+                    //     d.properties.returned_refugees = null;
+                    // }
+
+                    
+                    
 
                 });
                 console.log("new features");
@@ -462,8 +512,9 @@
 
                 d3.selectAll(".countries").on("mouseout", mouseLeavesPlot);
 
-                function mouseEntersPlot() {
+                function mouseEntersPlot(event, d) {
                     //console.log("enter")
+
                     tooltip.style("visibility", "visible");
 
                     let state = d3.select(this);
@@ -473,14 +524,17 @@
 
                     //update colors in function based on dictionaries of destination received
 
-                    console.log(state.datum() )
+                    //console.log(event, d)
+          
 
-                    let selected_country = state.datum().properties.name;
-                    let selected_refugees = state.datum().properties.refugee_total;
-                    let selected_asylums = state.datum().properties.asylum_total;
-                    let selected_destinations = state.datum().properties.destination_countries;
-                    let selected_refugee_vals = state.datum().properties.destination_refugees;
-                    let selected_refugee_pairs = state.datum().properties.destination_pairs;
+                    //use 
+
+                    let selected_country = d.properties.name;
+                    let selected_refugees = d.properties.refugee_total;
+                    let selected_asylums = d.properties.asylum_total;
+                    let selected_destinations = d.properties.destination_countries;
+                    let selected_refugee_vals = d.properties.destination_refugees;
+                    let selected_refugee_pairs = d.properties.destination_pairs;
 
                     console.log(selected_country);
                     console.log(selected_destinations);
@@ -530,7 +584,9 @@
                 selected_destinations.forEach( function(d,i) {
                     console.log("destination country d");
                     console.log(d);
-                    let replace_d = d; //do string to replace
+                    let replace_d = d.replace(/ /,"-"); //do string to replace
+                    //every place with country name, switch to hypens at the beginning 
+                    //sanitization selectors 
                     d3.select("#world-map #"+replace_d)
                         .attr("class", "countries selected");
                         // .attr("fill", "yellow");
@@ -550,40 +606,39 @@
             }
 
             function updateGraph(selected_destinations, selected_refugee_vals, selected_refugee_pairs) {
-                const selected_refugee_scale = d3.scaleLinear().domain(selected_refugee_vals).range([0, chartHeight]);
+                console.log(selected_refugee_vals);
+                
 
-                let leftAxis = d3.axisLeft(selected_refugee_scale);
+                // const selected_refugee_scale = d3.scaleLinear().domain(selected_refugee_vals).range([chartHeight, 0]);
 
-                let leftGridlines = d3.axisLeft(selected_refugee_scale)
+                const dest_refugee_extent = d3.extent(selected_refugee_vals);
+                const dest_refugee_scale = d3.scaleLinear().domain(dest_refugee_extent).range([chartHeight,0]);
+
+                let leftAxis = d3.axisLeft(dest_refugee_scale);
+
+                let leftGridlines = d3.axisLeft(dest_refugee_scale)
                                         .tickSize(-chartWidth-10)
                                         .tickFormat("")
 
-                annotations.append("g")
-                                .attr("class", "y axis")
-                                .attr("transform",`translate(${margin.left-10},${margin.top})`)
-                                .call(leftAxis)
 
-                annotations.append("g")
-                                .attr("class", "y gridlines")
-                                .attr("transform",`translate(${margin.left-10},${margin.top})`)
+                d3.selectAll(".x.axis").attr("visibility", "");
+
+                d3.selectAll(".y.axis")
+                                .attr("visibility", "")
+                                .call(leftAxis);
+
+                
+
+                d3.selectAll(".y.gridlines")
+                                .attr("visibility", "")
                                 .call(leftGridlines);
-
-
-                let bottomAxis = d3.axisBottom()
-                    let bottomAxisG = annotations.append("g")
-                           .attr("class", "x axis")
-                           .attr("transform",`translate(${margin.left},${chartHeight+margin.top+10})`)
-                         //  Don't use .call() for a blank axis
-
 
 
                 console.log("selected dest");
                 //console.log(selected_destinations);
                 //console.log(selected_refugee_vals);
 
-                const dest_refugee_extent = d3.extent(selected_refugee_vals);
-                const dest_refugee_scale = d3.scaleLinear().domain(dest_refugee_extent).range([chartHeight,0]);
-
+            
                 // console.log(dest_refugee_scale);
 
                 // console.log(selected_destinations);
@@ -594,19 +649,28 @@
                                                         .padding(0.05);
 
                 bottomAxis.scale(destinationScale);
-                bottomAxisG.transition().call(bottomAxis);
+                bottomAxisG.call(bottomAxis);
+
+                //delete characters and add ... for string names, or add shortnames 
 
 
+                console.log(selected_refugee_pairs);
+             
+
+                //can't have this happen every time 
                 chartArea.selectAll('rect.bar').data(selected_refugee_pairs)
                         .join( enter => enter.append('rect')
                                             .attr('class', 'bar')
-                                            .attr('fill', 'steelblue')
+                                            .attr('fill', 'steelblue') )
+
                                             .attr('x', d => destinationScale(d[0]))
-                                            .attr("y", d => 10+ dest_refugee_scale(d[1]))
-                                            .attr("height", d => dest_refugee_scale(d[1])) //height is determined by value 
-                                            .attr("width", destinationScale.bandwidth())
-                                            .call( enter => enter.transition().attr('opacity', 1) ), 
-                                exit => exit.call(exit => exit.transition().attr('opacity', 0).remove() ) );
+                                            .attr("y", d => 100) //dest_refugee_scale(d[1]))
+                                            .attr("height", d => 100) //dest_refugee_scale(0) - dest_refugee_scale(d[1])) //height is determined by value ? 
+                                            .attr("width", destinationScale.bandwidth());
+
+
+                                //             .call( enter => enter.transition().attr('opacity', 1) ), 
+                                // exit => exit.call(exit => exit.transition().attr('opacity', 0).remove() ) );
             
 
 
@@ -615,17 +679,22 @@
             function finishUpdate() {
                 //clear the gridlines
         
-                const selected_refugee_scale = d3.scaleLinear().domain([0,10]).range([0, chartHeight]);
+                // const selected_refugee_scale = d3.scaleLinear().domain([0,10]).range([0, chartHeight]);
 
-                let leftAxis = d3.axisLeft(selected_refugee_scale);
+                // let leftAxis = d3.axisLeft(selected_refugee_scale);
                 
-                let leftGridlines = d3.axisLeft(selected_refugee_scale)
-                                        .tickSize(-chartWidth-10)
-                                        .tickFormat("")
+                // let leftGridlines = d3.axisLeft(selected_refugee_scale)
+                //                         .tickSize(-chartWidth-10)
+                //                         .tickFormat("")
 
-                let bottomAxis = d3.axisBottom()
-                let bottomAxisG = annotations.append("g")
-                           .attr("visibility", "hidden");
+                //let bottomAxis = d3.axisBottom()
+       
+                           
+                d3.selectAll(".x.axis").attr("visibility", "hidden");
+
+                d3.selectAll(".y.axis").attr("visibility", "hidden");
+
+                d3.selectAll(".y.gridlines").attr("visibility", "hidden");
                           
                           
                          //  Don't use .call() for a blank axis
