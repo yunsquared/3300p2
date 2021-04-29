@@ -55,6 +55,9 @@
             background-color: red;
         }
 
+        .selected {
+            fill: yellow;
+        }
 
 
     </style>
@@ -238,6 +241,7 @@
                                 //console.log(selected_destinations);
                                 
                                 if(state.attr("id") === d) {
+
                                     //matches 
                                     state.attr("fill", 'red');
                                    
@@ -287,7 +291,7 @@
                 worldmap.selectAll("path.countries").data(countries.features)
                         .join("path")
                         .attr("class", "countries")
-                        .attr("id", d => d.properties.name)
+                        .attr("id", d => d.properties.name) //potentially do string replacement, spaces with dashes
                         .attr("dest_id", d=>d.properties.destination_countries)
                         .attr("d", path_world)
                         .attr("fill", d=> {
@@ -442,6 +446,8 @@
 
                     //access destination values 
 
+                    updateMap(selected_destinations, path_world);
+
                     updateGraph(selected_destinations, selected_refugee_vals, selected_refugee_pairs);
 
                 }
@@ -452,13 +458,42 @@
                     let selected_country = d3.select(this);
 
                     momesh.attr("d", "");
+
+                    finishUpdate();
+
+                    finishUpdateMap();
                 }
                 
+            }
+
+            function updateMap(selected_destinations, path_world) {
+                console.log("selected!!!");
+                console.log(selected_destinations);
+
+                selected_destinations.forEach( function(d,i) {
+                    console.log("destination country d");
+                    console.log(d);
+                    let replace_d = d; //do string to replace 
+                    d3.select("#world-map #"+replace_d) 
+                        .attr("class", "countries selected");
+                        // .attr("fill", "yellow");
+                    
+ 
+                    })
+                        
+            }
+
+            function finishUpdateMap() {
+                d3.selectAll("#world-map .selected")
+                    .attr("class", "countries");
+
+                
+              
 
             }
 
             function updateGraph(selected_destinations, selected_refugee_vals, selected_refugee_pairs) {
-                const selected_refugee_scale = d3.scaleLinear().domain(selected_refugee_vals).range([chartHeight, 0]);
+                const selected_refugee_scale = d3.scaleLinear().domain(selected_refugee_vals).range([0, chartHeight]);
 
                 let leftAxis = d3.axisLeft(selected_refugee_scale);
                 
@@ -510,8 +545,8 @@
                                             .attr('class', 'bar')
                                             .attr('fill', 'steelblue')
                                             .attr('x', d => destinationScale(d[0]))
-                                            .attr("y", d => dest_refugee_scale(d[1]))
-                                            .attr("height", d => dest_refugee_scale(d[1])) //what should height be? 
+                                            .attr("y", d => chartHeight - dest_refugee_scale(d[1]))
+                                            .attr("height", d => dest_refugee_scale(d[1])) //height is determined by value 
                                             .attr("width", destinationScale.bandwidth())
                                             .call( enter => enter.transition().attr('opacity', 1) ), 
                                 exit => exit.call(exit => exit.transition().attr('opacity', 0).remove() ) );
@@ -523,6 +558,11 @@
                     //do data join to svg2,
                 
                 
+            }
+
+            function finishUpdate() {
+                //clear the gridlines  
+
             }
 
             
