@@ -233,7 +233,7 @@
                 //fit extent
                 //fit clip
                 //add filter
-                const projection_world = d3.geoMercator().fitSize([width, height-20], countries)
+                const projection_world = d3.geoEqualEarth().fitSize([width, height-20], countries)
                 //var projection = d3.geoAlbersUsa().fitSize([mapWidth, mapHeight], states)
 
                 const path_world= d3.geoPath().projection(projection_world);
