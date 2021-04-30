@@ -87,15 +87,6 @@
             position: relative;
         }
 
-        .gridlines line {
-        stroke: #bbb;
-        }
-
-        .gridlines .domain {
-        stroke: none;
-        }
-
-
     </style>
 
     <header>
@@ -106,18 +97,16 @@
     </header>
     <body>
 
-        <div id="worldLegend" class="legend"> </div>
-        
         <div class = "row" style = "width:2400">
-            <svg id="world-map2" height = "300" width="500" style="border: 1px solid lightgray;"></svg>
-            <svg id="world-map" height = "1000" width="1400"></svg>
+
+            <svg id="world-map" height = "800" width="1000"></svg>
 
 
             <!-- make second svg to call second function on -->
-       
+            <svg id="world-map2" height = "400" width="600" style="border: 1px solid lightgray;"></svg>
         </div>
 
-      
+        <div id="worldLegend" class="legend"> </div>
 
         
         <script>
@@ -158,13 +147,10 @@
                         
 
 
-            //TODO POTENTIAL spot for rotate axis https://bl.ocks.org/mbostock/4403522
             let bottomAxis = d3.axisBottom()
             let bottomAxisG = annotations.append("g")
                            .attr("class", "x axis")
-                           
                            .attr("transform",`translate(${margin.left},${chartHeight+margin.top+10})`);
-                          
                          //  Don't use .call() for a blank axis
 
 
@@ -179,22 +165,14 @@
             const requestData = async function() {
                 //load datasets
 
-      
+                //const refugee = await d3.json("../datasets/refugee.json");
 
                 const globe = await d3.json("../datasets/countries-110m.json");
 
-                const countries2013 = await d3.json("../datasets/countries-2013-updated.json");
+                const countries2013 = await d3.json("../datasets/countries-2013-new.json");
                 //const countries2014 = await d3.json("../datasets/countries-2014-new.json");
 
                 console.log(countries2013);
-
-                //TODO: filtering names, add - for spaces 
-
-
-
-
-
-
                 //console.log(countries2014);
 
                 // console.log(refugee);
@@ -272,9 +250,9 @@
 
                     }
                     else {
-                        d.properties.refugee_total = 0;
-                        d.properties.asylum_total = 0;
-                        d.properties.destination_countries = 0;
+                        d.properties.refugee_total = null;
+                        d.properties.asylum_total = null;
+                        d.properties.destination_countries = null;
                     }
 
                       // if (country_name in solutionsByCountry) {
@@ -303,7 +281,7 @@
 
                 //coloring the map by refugee num
 
-                let refugeeColors= [ "#e6ecf2", "#cfe7ff", "#b3d9ff", '#6bb5ff', "#2e96ff"];
+                let refugeeColors= [ "#cfe7ff", "#b3d9ff", "#87c3ff", '#6bb5ff', "#2e96ff"];
                 //let refugeeScale = d3.scaleOrdinal(d3.schemeCategory10);
 
                 const refugeeScale = d3.scaleQuantile().domain(refugeeVals).range([0,1,2,3,4]);
@@ -624,20 +602,17 @@
 
 
 
+
             }
 
             function updateGraph(selected_destinations, selected_refugee_vals, selected_refugee_pairs) {
-                console.log(selected_destinations);
-                console.log(selected_refugee_pairs);
+                console.log(selected_refugee_vals);
                 
 
                 // const selected_refugee_scale = d3.scaleLinear().domain(selected_refugee_vals).range([chartHeight, 0]);
 
-                //y axis 
                 const dest_refugee_extent = d3.extent(selected_refugee_vals);
                 const dest_refugee_scale = d3.scaleLinear().domain(dest_refugee_extent).range([chartHeight,0]);
-
-                //console.log(dest_refugee_scale(1));
 
                 let leftAxis = d3.axisLeft(dest_refugee_scale);
 
@@ -645,6 +620,8 @@
                                         .tickSize(-chartWidth-10)
                                         .tickFormat("")
 
+
+                d3.selectAll(".x.axis").attr("visibility", "");
 
                 d3.selectAll(".y.axis")
                                 .attr("visibility", "")
@@ -657,37 +634,61 @@
                                 .call(leftGridlines);
 
 
-                //x axis 
+                console.log("selected dest");
+                //console.log(selected_destinations);
+                //console.log(selected_refugee_vals);
+
+            
+                // console.log(dest_refugee_scale);
+
+                // console.log(selected_destinations);
+                // console.log(selected_refugee_pairs);
+
+
                 const destinationScale = d3.scaleBand().domain(selected_destinations).range([0,chartWidth])
                                                         .padding(0.05);
 
                 bottomAxis.scale(destinationScale);
-       
-
                 bottomAxisG.call(bottomAxis);
-
-                d3.selectAll(".x.axis").attr("visibility", "");
 
                 //delete characters and add ... for string names, or add shortnames 
 
 
+                console.log(selected_refugee_pairs);
              
 
                 //can't have this happen every time 
                 chartArea.selectAll('rect.bar').data(selected_refugee_pairs)
-                        .join('rect').attr('class', 'bar')
-                                            .attr('fill', 'steelblue')
-                                            .attr("visibility", "")
+                        .join( enter => enter.append('rect')
+                                            .attr('class', 'bar')
+                                            .attr('fill', 'steelblue') )
+
                                             .attr('x', d => destinationScale(d[0]))
-                                            .attr("y", d => dest_refugee_scale(d[1]))
-                                            .attr("height", d => dest_refugee_scale(0) -dest_refugee_scale(d[1])) //height is determined by value ? 
+                                            .attr("y", d => 100) //dest_refugee_scale(d[1]))
+                                            .attr("height", d => 100) //dest_refugee_scale(0) - dest_refugee_scale(d[1])) //height is determined by value ? 
                                             .attr("width", destinationScale.bandwidth());
+
+
+                                //             .call( enter => enter.transition().attr('opacity', 1) ), 
+                                // exit => exit.call(exit => exit.transition().attr('opacity', 0).remove() ) );
+            
+
 
             }
 
             function finishUpdate() {
                 //clear the gridlines
         
+                // const selected_refugee_scale = d3.scaleLinear().domain([0,10]).range([0, chartHeight]);
+
+                // let leftAxis = d3.axisLeft(selected_refugee_scale);
+                
+                // let leftGridlines = d3.axisLeft(selected_refugee_scale)
+                //                         .tickSize(-chartWidth-10)
+                //                         .tickFormat("")
+
+                //let bottomAxis = d3.axisBottom()
+       
                            
                 d3.selectAll(".x.axis").attr("visibility", "hidden");
 

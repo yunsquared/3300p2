@@ -91,6 +91,9 @@
             
 
         <div id="worldLegend" class="legend"> </div>
+
+        <svg id = "solutionsChart" height = "500" width= "800" style = "border: 1px solid lightgray;"></svg>
+        
         <script>
             const world = d3.select("#world-map");
             const width = world.attr("width");
@@ -118,7 +121,24 @@
                   .attr("transform","translate("+margin.left+","+margin.top+")");
 
             d3.select("#label").raise();
-  
+
+            //third scatter plot 
+
+            const svg3 = d3.select("svg#solutionsChart");
+            const width3 = svg3.attr("width");
+            const height3 = svg3.attr("height");
+
+            const margin = {top: 10, right: 10, bottom: 50, left: 50};
+
+            const chartWidth3 = width3 - margin.left - margin.right;
+            const chartHeight3 = height3 - margin.top - margin.bottom;
+
+            const solutions_graph = svg3.append("g");
+
+            let solutions_annotations = svg3.append("g").attr("id","annotations");
+                  // No translate here since our annotations may be outside of the chart area
+                  
+            let solutions_chartArea = svg3.append("g").attr("id","points");
 
 
 
@@ -177,14 +197,49 @@
                 let refugeeVals = d3.map(countries2013, d=>d.totals[0].total_refugees);
                 let asylumVals = d3.map(countries2013, d=>d.totals[0].total_asylum);
 
+                let solutionsCountries = d3.map(solutions2013sorted, d=> d.country)
                 let returnedVals = d3.map(solutions2013sorted, d=>d.returned_refugees);
                 let naturalizedVals = d3.map(solutions2013sorted, d=>d.naturalized);
                 let resettledVals = d3.map(solutions2013sorted, d=>d.resettlement);
 
-                console.log(returnedVals);
+                console.log(solutionsCountries.length);
+           
+                //create solutions plot 
+                
+                //make x axis 
+                //const selected_refugee_scale = d3.scaleLinear().domain([0,solutionsCountries.length]).range([0, chartWidth3]);
+
+                let selected_refugee_scale 
+
+                let leftAxis = d3.axisLeft(selected_refugee_scale);
+                
+                let leftGridlines = d3.axisLeft(selected_refugee_scale)
+                                        .tickSize(-chartWidth-10)
+                                        .tickFormat("")
+
+                annotations.append("g")
+                                .attr("class", "y axis")
+                                .attr("transform",`translate(${margin.left-10},${margin.top})`)
+                                .call(leftAxis)
+
+                annotations.append("g")
+                                .attr("class", "y gridlines")
+                                .attr("transform",`translate(${margin.left-10},${margin.top})`)
+                                .call(leftGridlines);
+
+                
+                let bottomAxis = d3.axisBottom()
+                    let bottomAxisG = annotations.append("g")
+                        .attr("class", "x axis")
+                        .attr("transform",`translate(${margin.left},${chartHeight+margin.top+10})`)
+                        //  Don't use .call() for a blank axis
+
+
+
+                            console.log(returnedVals);
                 // console.log(asylumVals)
 
-                //const refugeeScale = d3.scaleLog().domain(refugeeVals).range([chartHeight, 0]);
+              
 
 
                 //create look up table, based on name of country 
@@ -196,15 +251,19 @@
                 console.log(refugeeByCountry);
 
                 solutionsByCountry = {};
-                solutions2013sorted.forEach( d => {
-                    solutionsByCountry[d.country] = d;
+                solutions2013sorted.forEach( e => {
+                    solutionsByCountry[e.country] = e;
+                    //console.log(e.country);
                 });
+
+                
                 console.log("refugee by solution");
-                console.log(solutionsByCountry);
+                console.log((solutionsByCountry));
 
                 //add refugee and asylum values to topojson properties 
                 countries.features.forEach( d => {
                     country_name = d.properties.name;
+                    solution_country = d.properties.name;
 
                     if (country_name in refugeeByCountry) {
                         d.properties.refugee_total = refugeeByCountry[country_name].totals[0].total_refugees;
@@ -212,6 +271,10 @@
                         d.properties.destination_countries = refugeeByCountry[country_name].destination_countries;
                         d.properties.destination_refugees = refugeeByCountry[country_name].destination_refugees;
                         d.properties.destination_pairs = refugeeByCountry[country_name].destination_pairs;
+
+                        //d.properties.returned_refugees = solutionsByCountry;
+
+
 
                     }
                     else {
@@ -235,14 +298,12 @@
                     //     d.properties.returned_refugees = null;
                     // }
 
-                    
-                    
-
+                
                 });
 
 
-                
 
+        
 
                 console.log("new features");
                 console.log(countries);
