@@ -107,7 +107,7 @@
     <body>
 
         <div id="worldLegend" class="legend"> </div>
-        
+
         <div class = "row" style = "width:2400">
             <svg id="world-map2" height = "300" width="500" style="border: 1px solid lightgray;"></svg>
             <svg id="world-map" height = "1000" width="1400"></svg>
@@ -671,8 +671,7 @@
                 //delete characters and add ... for string names, or add shortnames 
 
 
-             
-
+        
                 //can't have this happen every time 
                 chartArea.selectAll('rect.bar').data(selected_refugee_pairs)
                         .join('rect').attr('class', 'bar')
@@ -680,7 +679,7 @@
                                             .attr("visibility", "")
                                             .attr('x', d => destinationScale(d[0]))
                                             .attr("y", d => dest_refugee_scale(d[1]))
-                                            .attr("height", d => dest_refugee_scale(0) -dest_refugee_scale(d[1])) //height is determined by value ? 
+                                            .attr("height", d => chartHeight - dest_refugee_scale(d[1])) //height is determined by value ? 
                                             .attr("width", destinationScale.bandwidth());
 
             }
