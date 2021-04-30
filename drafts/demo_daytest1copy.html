@@ -41,7 +41,7 @@
         }
 
         .legend .button {
-            background-color: greenyellow;
+            background-color: lightgrey;
             border-width: 2px;
             border-color: black;
 
@@ -59,6 +59,7 @@
 
         .selected {
             fill: yellow;
+
         }
         header{
           font-family:"Roboto", sans-serif;
@@ -101,6 +102,10 @@
     <header>
       <div class="title">
         <h1>UNHCR Refugee Asylum Data 2013</h1>
+        <p>Migration from country to country across the world has become easier than ever before for the common person as a result of developments in technology, political relationships, and travel.
+          This phenomenon has supported the growth of not only voluntary immigration, but refugeeism as well. Disease, war, wrongful persecution,
+          and natural disasters are still prevalent in many places across the globe and continue to drive and displace
+          people both internationally and domestically.</p>
         <hr>
         </div>
     </header>
@@ -109,6 +114,10 @@
         <div id="worldLegend" class="legend"> </div>
 
         <div class = "row" style = "width:2400">
+<<<<<<< HEAD
+=======
+            <svg id="world-map2" height = "600" width="500" style="border: 1px solid lightgray;"></svg>
+>>>>>>> 14fb3a6178dba726ea14424ab5eb76423ebd5d96
             <svg id="world-map" height = "1000" width="1400"></svg>
 
             <!-- make second svg to call second function on -->
@@ -121,6 +130,15 @@
 
 
         <script>
+
+            function sanitizeid(string) {
+                          //return string.replace(/\s+/g,"").replace(/[\(\)\[\]\.,']+/g,"")
+                          //[^A-Za-z]
+                          return string.replace(/[^A-Za-z]+/g,"");
+
+
+                        };
+
             const world = d3.select("#world-map");
             const width = world.attr("width");
             const height = world.attr("height");
@@ -135,7 +153,7 @@
 
             const world_graph = svg2.append("g");
 
-            const margin = {top: 10, right: 10, bottom: 50, left: 50};
+            const margin = {top: 10, right: 10, bottom: 250, left: 50};
 
             const chartWidth = width2 - margin.left - margin.right;
             const chartHeight = height2 - margin.top - margin.bottom;
@@ -160,11 +178,16 @@
 
             //TODO POTENTIAL spot for rotate axis https://bl.ocks.org/mbostock/4403522
             let bottomAxis = d3.axisBottom()
+
+
+            //Give axis bottom scale
+            //then call to paste the axis somewhere
             let bottomAxisG = annotations.append("g")
                            .attr("class", "x axis")
 
-                           .attr("transform",`translate(${margin.left},${chartHeight+margin.top+10})`)
-                           //.selectAll("text").attr("transform","rotate(90)")
+                           .attr("transform",`translate(${margin.left},${chartHeight+margin.top+10})`);
+
+                           //
                            ;
 
                          //  Don't use .call() for a blank axis
@@ -331,7 +354,7 @@
                         .append("span")
                         .attr("class", "button")
                         .text(d)
-                        .style("color", "green")
+                        .style("color", "blue")
                         .on("click", function() {
                             d3.selectAll("#world-map .countries").each( function() { //are id's needed?
                                 let state = d3.select(this);
@@ -396,7 +419,7 @@
                 worldmap.selectAll("path.countries").data(countries.features)
                         .join("path")
                         .attr("class", "countries")
-                        .attr("id", d => d.properties.name) //potentially do string replacement, spaces with dashes
+                        .attr("id", d => sanitizeid(d.properties.name)) //potentially do string replacement, spaces with dashes
                         .attr("dest_id", d=>d.properties.destination_countries)
                         .attr("d", path_world)
                         .attr("fill", d=> {
@@ -447,7 +470,7 @@
                                 .attr("font-size","11px")
                                 .style("font-weight","bold")
                                 .style("text-transform","uppercase");
-                               perma_label1.text("Number of Refugees: ");
+                               perma_label1.text("Refugees: ");
 
 
                   let perma_label2 = perma.append("text")
@@ -460,7 +483,7 @@
                                                            .attr("font-size","11px")
                                                            .style("font-weight","bold")
                                                            .style("text-transform","uppercase");
-                                                 perma_label2.text("Number of Asylum Seekers: " );
+                                                 perma_label2.text("Asylum Seekers: " );
 
 
 
@@ -628,6 +651,11 @@
 
                     updateGraph(selected_destinations, selected_refugee_vals, selected_refugee_pairs);
 
+
+//new add
+                    bottomAxisG.selectAll("text").attr("transform","translate(-8,0) rotate(-30)")
+                    .style("text-anchor",'end')
+
                 }
 
                 function mouseLeavesPlot() {
@@ -651,10 +679,11 @@
                 selected_destinations.forEach( function(d,i) {
                     console.log("destination country d");
                     console.log(d);
-                    let replace_d = d.replace(/ /,"-"); //do string to replace
+                    // san_id= sanitizeid(d);
+                    // let replace_d = d.replace(/ /,"-"); //do string to replace
                     //every place with country name, switch to hypens at the beginning
                     //sanitization selectors
-                    d3.select("#world-map #"+replace_d)
+                    d3.select("#world-map #"+sanitizeid(d))
                         .attr("class", "countries selected");
                         // .attr("fill", "yellow");
 
@@ -662,6 +691,7 @@
                     })
 
             }
+
 
             function finishUpdateMap() {
                 d3.selectAll("#world-map .selected")
@@ -710,6 +740,8 @@
 
 
                 bottomAxisG.call(bottomAxis);
+
+
 
                 d3.selectAll(".x.axis").attr("visibility", "");
 
