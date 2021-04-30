@@ -138,19 +138,19 @@
 
         <div id="worldLegend" class="legend"> </div>
 
-        <div class = "row" style = "width:2400">
+        <div class = "row" style = "width:2600">
             <svg id="world-map2" height = "600" width="500" ></svg>
-            <!-- style="border: 1px solid lightgray;" -->
             <svg id="world-map" height = "1000" width="1400"></svg>
-            <svg id="world-map2" height = "600" width="700" style="border: 1px solid lightgray;"></svg>
+     
+            <!-- style="border: 1px solid lightgray;" -->
+  
+            <!-- <svg id="world-map2" height = "600" width="700" style="border: 1px solid lightgray;"></svg> -->
 
             <!-- make second svg to call second function on -->
             <!-- <svg id="world-map2" height = "300" width="500" style="border: 1px solid lightgray;"></svg>
         -->
 
         </div>
-
-
 
 
         <script>
@@ -177,7 +177,7 @@
 
             const world_graph = svg2.append("g");
 
-            const margin = {top: 100, right: 10, bottom: 250, left: 50};
+            const margin = {top: 100, right: 60, bottom: 250, left: 50};
 
             const chartWidth = width2 - margin.left - margin.right;
             const chartHeight = height2 - margin.top - margin.bottom;
