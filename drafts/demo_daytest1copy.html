@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>yw458 awi3 3300 P2 Project</title>
+        <script src="https://d3js.org/d3.v6.min.js"></script>
+        <script src="https://d3js.org/topojson.v3.min.js"></script>
+    </head>
+
+    <style>
+        .country {
+            fill: lightgrey;
+        }
+
+        .outline {
+            stroke: black;
+            stroke-width: 1px;
+            fill: none;
+
+        }
+
+        .mouseover {
+            stroke-width: 3px;
+
+        }
+
+        .graticule {
+            fill: none;
+            stroke: grey;
+            stroke-width: 1px;
+        }
+
+
+
+        .legend span {
+         margin-left: 10px;
+
+
+        }
+
+        .legend .button {
+            background-color: blueviolet;
+            border-width: 2px;
+            border-color: black;
+
+        }
+
+        .button:hover {
+            background-color: yellow;
+
+
+        }
+
+        .button:active {
+            background-color: red;
+        }
+
+        .selected {
+            fill: yellow;
+        }
+        header{
+          font-family:"Roboto", sans-serif;
+          padding:50px;
+          background: #e4e7ed;
+
+        }
+        .title h1{
+          color: #606266;
+          margin: 0;
+          font-size: 40px;
+          text-transform: uppercase;
+          font-weight: 900;
+        }
+
+        body{
+          background: #e4e7ed;
+        }
+        .worldLegend{
+          background-color:white
+        }
+
+        .row{
+            display: flex;
+            flex-direction: row;
+            position: relative;
+        }
+
+        .gridlines line {
+        stroke: #bbb;
+        }
+
+        .gridlines .domain {
+        stroke: none;
+        }
+
+
+    </style>
+
+    <header>
+      <div class="title">
+        <h1>UNHCR Refugee Asylum Data 2013</h1>
+        <hr>
+        </div>
+    </header>
+    <body>
+
+        <div id="worldLegend" class="legend"> </div>
+
+        <div class = "row" style = "width:2400">
+            <svg id="world-map2" height = "300" width="500" style="border: 1px solid lightgray;"></svg>
+            <svg id="world-map" height = "1000" width="1400"></svg>
+
+
+            <!-- make second svg to call second function on -->
+
+        </div>
+
+
+
+
+        <script>
+            const world = d3.select("#world-map");
+            const width = world.attr("width");
+            const height = world.attr("height");
+
+            const worldmap= world.append("g");
+
+            //second viz
+
+            const svg2 = d3.select("svg#world-map2");
+            const width2 = svg2.attr("width");
+            const height2 = svg2.attr("height");
+
+            const world_graph = svg2.append("g");
+
+            const margin = {top: 10, right: 10, bottom: 50, left: 50};
+
+            const chartWidth = width2 - margin.left - margin.right;
+            const chartHeight = height2 - margin.top - margin.bottom;
+
+            let annotations = svg2.append("g").attr("id","annotations");
+                  // No translate here since our annotations may be outside of the chart area
+
+            let chartArea = svg2.append("g").attr("id","points")
+                  .attr("transform","translate("+margin.left+","+margin.top+")");
+
+
+            annotations.append("g") //change / update instead of append
+                                .attr("class", "y axis")
+                                .attr("transform",`translate(${margin.left-10},${margin.top})`);
+
+
+            annotations.append("g")
+                                .attr("class", "y gridlines")
+                                .attr("transform",`translate(${margin.left-10},${margin.top})`);
+
+
+
+            //TODO POTENTIAL spot for rotate axis https://bl.ocks.org/mbostock/4403522
+            let bottomAxis = d3.axisBottom()
+            let bottomAxisG = annotations.append("g")
+                           .attr("class", "x axis")
+
+                           .attr("transform",`translate(${margin.left},${chartHeight+margin.top+10})`)
+                           //.selectAll("text").attr("transform","rotate(90)")
+                           ;
+
+                         //  Don't use .call() for a blank axis
+
+
+            d3.select("#label").raise();
+
+    //         let filteredStates = ['02','15','60','66','69','72','74','78'];
+    // us.objects.states.geometries = us.objects.states.geometries.filter( d => {
+    //                       return filteredStates.indexOf( d.id.toString().padStart(2,'0')  ) === -1;
+    //                     });
+
+
+            const requestData = async function() {
+                //load datasets
+
+
+
+                const globe = await d3.json("../datasets/countries-110m.json");
+
+                const countries2013 = await d3.json("../datasets/countries-2013-updated.json");
+                //const countries2014 = await d3.json("../datasets/countries-2014-new.json");
+
+                console.log(countries2013);
+
+                //TODO: filtering names, add - for spaces
+
+
+
+
+
+
+                //console.log(countries2014);
+
+                // console.log(refugee);
+                // console.log(globe);
+
+                // const projection = d3.geoAlbersUsa().scale(1300).translate([500,400]);
+
+                //pick topographic features
+                var countries = topojson.feature(globe, globe.objects.countries); //exclude antarctica from countries
+                var countriesMesh = topojson.mesh(globe, globe.objects.countries);
+
+                console.log(countries);
+
+                //fit size cut out antartica
+                //fit extent
+                //fit clip
+                //add filter
+                const projection_world = d3.geoMercator().fitSize([width, height-20], countries)
+                //var projection = d3.geoAlbersUsa().fitSize([mapWidth, mapHeight], states)
+
+                const path_world= d3.geoPath().projection(projection_world);
+
+                const graticule = d3.geoGraticule10();
+                worldmap.append("path").datum(graticule)
+                    .attr("class", "graticule")
+                    .attr("d", path_world);
+
+                //draw country outlines
+                worldmap.selectAll("path.country").data(countries.features)
+                    .join("path")
+                    .attr("class", "country")
+                    .attr("d", path_world);
+
+                worldmap.append("path").datum(countriesMesh) //add the mesh , collection of all the states' outlines, can be restyled depending on css
+                    .attr("class", "outline")
+                    .attr("d", path_world);
+
+                //add refugee csv data
+
+
+                let refugeeVals = d3.map(countries2013, d=>d.totals[0].total_refugees);
+                let asylumVals = d3.map(countries2013, d=>d.totals[0].total_asylum);
+
+                console.log(refugeeVals)
+                console.log(asylumVals)
+
+                //const refugeeScale = d3.scaleLog().domain(refugeeVals).range([chartHeight, 0]);
+
+
+                //create look up table, based on name of country
+                refugeeByCountry = {};
+                countries2013.forEach( d=> {
+                    refugeeByCountry[d.country] = d;
+                });
+                console.log("refugee by country");
+                console.log(refugeeByCountry);
+
+                // solutionsByCountry = {};
+                // solutions2013sorted.forEach( d => {
+                //     solutionsByCountry[d.country] = d;
+                // });
+                // console.log("refugee by solution");
+                // console.log(solutionsByCountry);
+
+                //add refugee and asylum values to topojson properties
+                countries.features.forEach( d => {
+                    country_name = d.properties.name;
+                    if (country_name in refugeeByCountry) {
+                        d.properties.refugee_total = refugeeByCountry[country_name].totals[0].total_refugees;
+                        d.properties.asylum_total = refugeeByCountry[country_name].totals[0].total_asylum;
+                        d.properties.destination_countries = refugeeByCountry[country_name].destination_countries;
+                        d.properties.destination_refugees = refugeeByCountry[country_name].destination_refugees;
+                        d.properties.destination_pairs = refugeeByCountry[country_name].destination_pairs;
+                        //d.properties.destination_countries = refugeeByCountry[country_name].destination_r; //array
+
+                    }
+                    else {
+                        d.properties.refugee_total = 0;
+                        d.properties.asylum_total = 0;
+                        d.properties.destination_countries = 0;
+                    }
+
+                      // if (country_name in solutionsByCountry) {
+
+                    //     d.properties.returned_refugees = solutionsByCountry[country_name].returned_refugees;
+
+                    //     d.properties.resettled= solutionsByCountry[country_name].resettlement;
+
+                    //     d.properties.naturalized = solutionsByCountry[country_name].naturalized;
+
+                    //     //d.properties.destination_countries = refugeeByCountry[country_name].destination_r; //array
+
+                    // }
+                    // else {
+                    //     d.properties.returned_refugees = null;
+                    // }
+
+
+
+
+                });
+                console.log("new features");
+                console.log(countries);
+
+
+
+                //coloring the map by refugee num
+
+                let refugeeColors= [ "#e6ecf2", "#cfe7ff", "#b3d9ff", '#6bb5ff', "#2e96ff"];
+                //let refugeeScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+                const refugeeScale = d3.scaleQuantile().domain(refugeeVals).range([0,1,2,3,4]);
+                const asylumScale = d3.scaleQuantile().domain(asylumVals).range([0,1,2,3,4]);
+
+                // const refugeeScale = d3.scaleLinear().domain(refugeeVals).range([0,1,2]);
+                // const asylumScale = d3.scaleQuantile().domain(asylumVals).range([0,1,2]);
+
+                console.log(refugeeScale);
+
+                //let originCountries = ['Syria', 'Venezuela', 'Albania', 'Turkey', 'Laos'];
+
+                let topCountries = ['Afghanistan', 'Syria', 'Somalia', 'Sudan', 'Dem. Rep. Congo', 'Myanmar', 'Iraq', 'Colombia', 'Vietnam', 'Eritrea'];
+
+                let legend = world.append("g")
+                                .attr("class", "legend")
+
+
+
+                topCountries.forEach( function(d, i) {
+                    //console.log(d);
+                    d3.select("#worldLegend")
+                        .append("span")
+                        .attr("class", "button")
+                        .text(d)
+                        .style("color", "green")
+                        .on("click", function() {
+                            d3.selectAll("#world-map .countries").each( function() { //are id's needed?
+                                let state = d3.select(this);
+
+                                let selected_country = state.datum().properties.name;
+                                //let selected_refugees = state.datum().properties.refugee_total;
+                                //let selected_asylums = state.datum().properties.asylum_total;
+                                let selected_destinations = state.datum().properties.destination_countries;
+                                //console.log("dest countries");
+                                //console.log(selected_destinations);
+
+                                if(state.attr("id") === d) {
+
+                                    //matches
+                                    //state.attr("class", "select-legend")
+                                    state.attr("fill", 'red');
+
+
+                                }
+                                else {
+
+                                    //state.attr("class", "countries");
+                                    state.attr("fill", d => {
+                                        let refugeeIndex = refugeeScale(d.properties.refugee_total);
+                                        let asylumIndex = asylumScale(d.properties.asylum_total);
+
+                                        if (refugeeIndex === undefined | asylumIndex ===undefined) {
+                                            return ""; //no fill
+                                        }
+                                        else {
+                                            return refugeeColors[refugeeIndex];
+                                        }
+
+                                    });
+
+                                }
+
+                                // if(state.attr("id") === d ) {
+                                //     selected_destinations.attr("visibility", "");
+
+
+
+                                // }
+                                // else {
+                                //     selected_destinations.attr("visibility", "hidden");
+
+                                //     //let selected_destinations = state.datum().properties.destination_countries;
+                                //     // selected_destinations.forEach( c=> {
+                                //     //     c.attr("visibility", 'hidden');
+                                //     // })
+
+                                // }
+
+                            });
+
+                        });
+
+                });
+
+                //draw states and outlines
+
+                worldmap.selectAll("path.countries").data(countries.features)
+                        .join("path")
+                        .attr("class", "countries")
+                        .attr("id", d => d.properties.name) //potentially do string replacement, spaces with dashes
+                        .attr("dest_id", d=>d.properties.destination_countries)
+                        .attr("d", path_world)
+                        .attr("fill", d=> {
+                            let refugeeIndex = refugeeScale(d.properties.refugee_total);
+                            let asylumIndex = asylumScale(d.properties.asylum_total);
+
+                            if (refugeeIndex === undefined | asylumIndex ===undefined) {
+                                return ""; //no fill
+                            }
+                            else {
+                                return refugeeColors[refugeeIndex];
+                            }
+                        });
+                worldmap.append("path").datum(countriesMesh)
+                        .attr("class", "outline")
+                        .attr("d", path_world);
+
+
+
+
+                //tool tip
+                let momesh = worldmap.append("path").attr("class", "mouseover outline").attr("d", "");
+
+                let tooltipWidth = 184;
+                let tooltipHeight = 184;
+
+
+                let perma = world.append("g").attr("class","labeltip");
+
+                // let perma_country = perma.append("text")
+                //                 .attr("fill", "black")
+                //                 .attr("text-anchor", "left")
+                //                 .attr("alignment-baseline", "hanging")
+                //                 .attr("x", 15)
+                //                 .attr("y", 20)
+                //                 .attr("font-size","13px")
+                //                 .style("font-family","Roboto, sans-serif")
+                //                 .style("font-weight","bold")
+                //                 .style("text-transform","uppercase");
+
+                let perma_label1 = perma.append("text")
+                                .attr("fill", "black")
+                                .attr("text-anchor", "left")
+                                .attr("alignment-baseline", "hanging")
+                                .attr("x", 30)
+                                .attr("y", 50)
+                                .style("font-family","Roboto, sans-serif")
+                                .attr("font-size","11px")
+                                .style("font-weight","bold")
+                                .style("text-transform","uppercase");
+                               perma_label1.text("Number of Refugees: ");
+
+
+                  let perma_label2 = perma.append("text")
+                                                           .attr("fill", "black")
+                                                           .attr("text-anchor", "left")
+                                                           .attr("alignment-baseline", "hanging")
+                                                           .attr("x", 10)
+                                                           .attr("y", 90)
+                                                           .style("font-family","Roboto, sans-serif")
+                                                           .attr("font-size","11px")
+                                                           .style("font-weight","bold")
+                                                           .style("text-transform","uppercase");
+                                                 perma_label2.text("Number of Asylum Seekers: " );
+
+
+
+                let tooltip = world.append("g")
+                                    .attr("class", "tooltip")
+                                    .attr("visibility", "hidden");
+
+
+
+                // tooltip.append("rect")
+                //         .attr("fill",  "#e4e7ed")
+                //         .attr("opacity", 0.8)
+                //         .attr("x", 0)
+                //         .attr("y", 0)
+                //         .attr("width", tooltipWidth)
+                //         .attr("height", tooltipHeight)
+              let tt_border = world.append("g")
+                                  .attr("class","tt_border");
+              // tt_border.append("rect")
+              //   .attr("fill","none")
+              //   .attr("stroke","black")
+              //   .attr("stroke-width","5")
+              //   .attr("opacity",0.9)
+              //   .attr("x", 2.5)
+              //   .attr("y", 2.5)
+              //   .attr("width", tooltipWidth-5)
+              //   .attr("height", tooltipHeight)
+
+                let txt_country = tooltip.append("text")
+                                .attr("fill", "black")
+                                .attr("text-anchor", "left")
+                                .attr("alignment-baseline", "hanging")
+                                .attr("x", 22.5)
+                                .attr("y", 20)
+                                .attr("font-size","10px")
+                                .style("font-family","Roboto, sans-serif")
+                                .style("font-weight","bold")
+                                .style("text-transform","uppercase");
+
+                // let label_stats = tooltip.append("text")
+                //                 .attr("fill", "black")
+                //                 .attr("text-anchor", "left")
+                //                 .attr("alignment-baseline", "hanging")
+                //                 .attr("x", 15)
+                //                 .attr("y", 50)
+                //                 .style("font-family","Roboto, sans-serif")
+                //                 .attr("font-size","8px")
+                //                 .style("font-weight","bold")
+                //                 .style("text-transform","uppercase");
+                //                label_stats.text("Number of Refugees: ");
+
+
+                let txt_stats = tooltip.append("text")
+                                            .attr("fill", "black")
+                                            .attr("text-anchor", "left")
+                                            .attr("alignment-baseline", "hanging")
+                                            .attr("x", 92)
+                                            .attr("y", 70)
+                                            .style("font-family","Roboto, sans-serif")
+                                            .attr("font-size","15px")
+                                            .style("font-weight","bold")
+                                            .style("text-transform","uppercase");
+
+                // let label_stats2 = tooltip.append("text")
+                //                             .attr("fill", "black")
+                //                             .attr("text-anchor", "left")
+                //                             .attr("alignment-baseline", "hanging")
+                //                             .attr("x", 15)
+                //                             .attr("y", 70)
+                //                             .style("font-family","Roboto, sans-serif")
+                //                             .attr("font-size","8px")
+                //                             .style("font-weight","bold")
+                //                             .style("text-transform","uppercase");
+                //                   label_stats2.text("Number of Asylum Seekers: " );
+
+                let txt_stats2 = tooltip.append("text")
+                                            .attr("fill", "black")
+                                            .attr("text-anchor", "left")
+                                            .attr("alignment-baseline", "hanging")
+                                            .attr("x", 92)
+                                            .attr("y", 110)
+                                            .style("font-family","Roboto, sans-serif")
+                                            .attr("font-size","15px")
+                                            .style("font-weight","bold")
+                                            .style("text-transform","uppercase");
+
+                let txt_destinations = tooltip.append("text")
+                                            .attr("fill", "black")
+                                            .attr("text-anchor", "left")
+                                            .attr("alignment-baseline", "hanging")
+                                            .attr("x", 15)
+                                            .attr("y", 90)
+                                            .style("font-family","Roboto, sans-serif")
+                                            .attr("font-size","8px")
+                                            .style("font-weight","bold")
+                                            .style("text-transform","uppercase")
+                                            .attr("visibility", "hidden");
+
+
+
+              let colorlegend = worldmap.append("g").attr("class","colorlegend")
+                                            .attr("transform","translate(0,184)");
+              for (let i=0; i<refugeeColors.length; i++){
+                                              colorlegend.append("rect")
+                                              .attr("x",i*184/refugeeColors.length)
+                                              .attr("y",150)
+                                              .attr("width",184/refugeeColors.length)
+                                              .attr("height",184)
+                                              .attr("fill",refugeeColors[i])
+                                              .attr("stroke","black")
+                                            }
+
+
+                //mouseovers
+                d3.selectAll(".countries").on("mouseenter", mouseEntersPlot);
+
+                d3.selectAll(".countries").on("mouseout", mouseLeavesPlot);
+
+                function mouseEntersPlot(event, d) {
+                    //console.log("enter")
+
+                    tooltip.style("visibility", "visible");
+
+                    let state = d3.select(this);
+
+                    //write function receiving the selected element
+                    //call function within mouseover, drawSecondMap function
+
+                    //update colors in function based on dictionaries of destination received
+
+                    //console.log(event, d)
+
+
+                    //use
+
+                    let selected_country = d.properties.name;
+                    let selected_refugees = d.properties.refugee_total;
+                    let selected_asylums = d.properties.asylum_total;
+                    let selected_destinations = d.properties.destination_countries;
+                    let selected_refugee_vals = d.properties.destination_refugees;
+                    let selected_refugee_pairs = d.properties.destination_pairs;
+
+                    console.log(selected_country);
+                    console.log(selected_destinations);
+
+
+
+                    //feedback
+                    let mo = topojson.mesh(globe, globe.objects.countries,
+                                                    function(a,b) { return a.name === selected_country || b.name === selected_country}
+                                                    );
+                    momesh.datum(mo).attr("d", path_world);
+
+                    txt_country.text(selected_country)
+                    txt_stats.text(selected_refugees)
+                    txt_stats2.text(selected_asylums)
+
+                    //print out destination countries...via for loop?
+                    //txt_destinations.text(Object.keys(destinationsDict))
+                    txt_destinations.text(selected_destinations);
+
+                    //access destination values
+
+                    updateMap(selected_destinations, path_world);
+
+                    updateGraph(selected_destinations, selected_refugee_vals, selected_refugee_pairs);
+
+                }
+
+                function mouseLeavesPlot() {
+                    tooltip.style("visibility", "hidden")
+
+                    let selected_country = d3.select(this);
+
+                    momesh.attr("d", "");
+
+                    finishUpdate();
+
+                    finishUpdateMap();
+                }
+
+            }
+
+            function updateMap(selected_destinations, path_world) {
+                // console.log("selected!!!");
+                // console.log(selected_destinations);
+
+                selected_destinations.forEach( function(d,i) {
+                    console.log("destination country d");
+                    console.log(d);
+                    let replace_d = d.replace(/ /,"-"); //do string to replace
+                    //every place with country name, switch to hypens at the beginning
+                    //sanitization selectors
+                    d3.select("#world-map #"+replace_d)
+                        .attr("class", "countries selected");
+                        // .attr("fill", "yellow");
+
+
+                    })
+
+            }
+
+            function finishUpdateMap() {
+                d3.selectAll("#world-map .selected")
+                    .attr("class", "countries");
+
+
+
+            }
+
+            function updateGraph(selected_destinations, selected_refugee_vals, selected_refugee_pairs) {
+                console.log(selected_destinations);
+                console.log(selected_refugee_pairs);
+
+
+                // const selected_refugee_scale = d3.scaleLinear().domain(selected_refugee_vals).range([chartHeight, 0]);
+
+                //y axis
+                const dest_refugee_extent = d3.extent(selected_refugee_vals);
+                const dest_refugee_scale = d3.scaleLinear().domain(dest_refugee_extent).range([chartHeight,0]);
+
+                //console.log(dest_refugee_scale(1));
+
+                let leftAxis = d3.axisLeft(dest_refugee_scale);
+
+                let leftGridlines = d3.axisLeft(dest_refugee_scale)
+                                        .tickSize(-chartWidth-10)
+                                        .tickFormat("")
+
+
+                d3.selectAll(".y.axis")
+                                .attr("visibility", "")
+                                .call(leftAxis);
+
+
+
+                d3.selectAll(".y.gridlines")
+                                .attr("visibility", "")
+                                .call(leftGridlines);
+
+
+                //x axis
+                const destinationScale = d3.scaleBand().domain(selected_destinations).range([0,chartWidth])
+                                                        .padding(0.05);
+
+                bottomAxis.scale(destinationScale);
+
+
+                bottomAxisG.call(bottomAxis);
+
+                d3.selectAll(".x.axis").attr("visibility", "");
+
+                //delete characters and add ... for string names, or add shortnames
+
+
+
+                //can't have this happen every time
+                chartArea.selectAll('rect.bar').data(selected_refugee_pairs)
+                        .join('rect').attr('class', 'bar')
+                                            .attr('fill', 'steelblue')
+                                            .attr("visibility", "")
+                                            .attr('x', d => destinationScale(d[0]))
+                                            .attr("y", d => dest_refugee_scale(d[1]))
+                                            .attr("height", d => chartHeight - dest_refugee_scale(d[1])) //height is determined by value ?
+                                            .attr("width", destinationScale.bandwidth());
+
+            }
+
+            function finishUpdate() {
+                //clear the gridlines
+
+
+                d3.selectAll(".x.axis").attr("visibility", "hidden");
+
+                d3.selectAll(".y.axis").attr("visibility", "hidden");
+
+                d3.selectAll(".y.gridlines").attr("visibility", "hidden");
+
+
+                         //  Don't use .call() for a blank axis
+
+                 //how to clear bars?
+                 d3.selectAll('rect.bar')
+                    .attr("visibility", "hidden");
+
+            }
+
+
+            requestData();
+
+
+        </script>
+
+    </body>
+</html>
