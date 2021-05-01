@@ -211,8 +211,7 @@
 
                            .attr("transform",`translate(${margin.left},${chartHeight+margin.top+10})`);
 
-                           //
-                           ;
+                           
 
                          //  Don't use .call() for a blank axis
 
@@ -237,17 +236,7 @@
 
                 console.log(countries2013);
 
-                //TODO: filtering names, add - for spaces
 
-
-
-
-
-
-                //console.log(countries2014);
-
-                // console.log(refugee);
-                // console.log(globe);
 
                 // const projection = d3.geoAlbersUsa().scale(1300).translate([500,400]);
 
@@ -280,8 +269,6 @@
                 worldmap.append("path").datum(countriesMesh) //add the mesh , collection of all the states' outlines, can be restyled depending on css
                     .attr("class", "outline")
                     .attr("d", path_world);
-
-                //add refugee csv data
 
 
                 let refugeeVals = d3.map(countries2013, d=>d.totals[0].total_refugees);
@@ -371,7 +358,6 @@
                                 .attr("class", "legend")
 
 
-
                 topCountries.forEach( function(d, i) {
                     //console.log(d);
                     d3.select("#worldLegend")
@@ -443,6 +429,48 @@
                         });
 
                 });
+
+                //add clear element outside of for each loop 
+
+                d3.select("#worldLegend")
+                        .append("span")
+                        .text("clear")
+                        .style("font-family","Roboto, sans-serif")
+                        .style("text-transform","uppercase")
+                        .attr("font-weight","bold")
+                        .attr("class", "button")
+                        .on("click", function() {
+                            //console.log(this);
+                            d3.selectAll(this).raise()
+                            d3.selectAll("#world-map .countries").each( function() {
+                                let state = d3.select(this);
+                                //let state = circle_select.attr("state");
+
+                                //console.log(state);
+
+                                // if (state === d) {
+
+                                //     circle_select.attr("opacity", 0.9);
+                                // }
+
+                                // else {
+                                //     circle_select.attr("opacity", 0.05);
+                                // }
+                                state.attr("fill", d => {
+                                        let refugeeIndex = refugeeScale(d.properties.refugee_total);
+                                        let asylumIndex = asylumScale(d.properties.asylum_total);
+
+                                        if (refugeeIndex === undefined | asylumIndex ===undefined) {
+                                            return ""; //no fill
+                                        }
+                                        else {
+                                            return refugeeColors[refugeeIndex];
+                                        }
+
+                                    });
+
+                });
+            });
 
                 //draw states and outlines
 
