@@ -151,7 +151,7 @@
 
         <div class = "row" style = "width:2600">
             <svg id="world-map2" height = "600" width="600" ></svg>
-            <svg id="world-map" height = "1000" width="1400"></svg>
+            <svg id="world-map" height = "1000" width="1200"></svg>
 
             <!-- style="border: 1px solid lightgray;" -->
 
@@ -188,7 +188,7 @@
 
             const world_graph = svg2.append("g");
 
-            const margin = {top: 100, right: 80, bottom: 250, left: 80};
+            const margin = {top: 100, right: 60, bottom: 250, left: 80};
 
             const chartWidth = width2 - margin.left - margin.right;
             const chartHeight = height2 - margin.top - margin.bottom;
@@ -243,8 +243,10 @@
                 const globe = await d3.json("../datasets/countries-110m.json");
 
                 const countries2013 = await d3.json("../datasets/countries-2013-updated.json");
+                // const countries2013 = await d3.json("../datasets/countries-2013.json");
                 
 
+                console.log("initial");
                 console.log(countries2013);
 
 
