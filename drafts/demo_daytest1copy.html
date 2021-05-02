@@ -25,7 +25,7 @@
             stroke: black;
             stroke-width: 4px;
             opacity: 0.5;
-       
+
         }
 
         .mouseover {
@@ -43,7 +43,7 @@
 
         .legend span {
          margin-left: 20px;
-         
+
 
 
         }
@@ -149,14 +149,12 @@
 
         <div id="worldLegend" class="legend"> </div>
 
-        <div class = "row" style = "width:2600" style = "padding-left: 30px" >
-   
+        <div class = "row" style = "width:2600">
             <svg id="world-map2" height = "600" width="500" ></svg>
             <svg id="world-map" height = "1000" width="1400"></svg>
 
-     
             <!-- style="border: 1px solid lightgray;" -->
-  
+
             <!-- <svg id="world-map2" height = "600" width="700" style="border: 1px solid lightgray;"></svg> -->
 
             <!-- make second svg to call second function on -->
@@ -224,7 +222,7 @@
 
                            .attr("transform",`translate(${margin.left},${chartHeight+margin.top+10})`);
 
-                           
+
 
                          //  Don't use .call() for a blank axis
 
@@ -392,7 +390,7 @@
                 //let originCountries = ['Syria', 'Venezuela', 'Albania', 'Turkey', 'Laos'];
 
                 let topCountries = ['Afghanistan', 'Syria', 'Somalia', 'Sudan', 'Dem. Rep. Congo', 'Myanmar', 'Iraq', 'Colombia', 'Vietnam', 'Eritrea'];
-       
+
                 let legend = world.append("g")
                                 .attr("class", "legend")
 
@@ -413,7 +411,7 @@
                         .on("click", function() {
                             d3.selectAll("#world-map .countries").each( function() { //are id's needed?
                                 let state = d3.select(this);
-                           
+
                                 let selected_country = state.datum().properties.name;
                                 //let selected_refugees = state.datum().properties.refugee_total;
                                 //let selected_asylums = state.datum().properties.asylum_total;
@@ -469,7 +467,7 @@
 
                 });
 
-                //add clear element outside of for each loop 
+                //add clear element outside of for each loop
 
                 d3.select("#worldLegend")
                         .append("span")
@@ -518,6 +516,7 @@
 
                 let tooltipWidth = 200;
                 let tooltipHeight = 200;
+
 
 
                 let perma = world.append("g").attr("class","labeltip");
@@ -722,7 +721,7 @@
                     console.log("outline2 ");
                     console.log(state, d);
 
-           
+
 
                     txt_country.text(selected_country)
                     txt_stats.text(selected_refugees)
@@ -750,15 +749,15 @@
 
                     let selected_country = d3.select(this);
 
-                
+
 
                     momesh.attr("d", "");
 
                     worldmap.selectAll("#world-map .outline2")
-                                
+
                                 .attr("class", "countries");
 
-            
+
 
                     finishUpdate();
 
@@ -854,6 +853,20 @@
                                             .attr("height", d => chartHeight - dest_refugee_scale(d[1])) //height is determined by value ?
                                             .attr("width", destinationScale.bandwidth());
 
+
+                                            let bar_title = chartArea.append("text")
+                                                            .attr("fill", "black")
+                                                            .attr("text-anchor", "left")
+                                                            .attr("alignment-baseline", "hanging")
+                                                            .attr("x", 0)
+                                                            .attr("y", 0)
+                                                            .attr("font-size","15px")
+                                                            .attr("class","bar_title")
+                                                            .style("font-family","Roboto, sans-serif")
+                                                            // .style("font-weight","bold")
+                                                            .style("text-transform","uppercase");
+                                                            bar_title.text("Number of Refugees Received by Asylum Country")
+
             }
 
             function finishUpdate() {
@@ -865,6 +878,8 @@
                 d3.selectAll(".y.axis").attr("visibility", "hidden");
 
                 d3.selectAll(".y.gridlines").attr("visibility", "hidden");
+
+                d3.selectAll("text.bar_title").attr("visibility","hidden");
 
 
                          //  Don't use .call() for a blank axis
