@@ -21,6 +21,13 @@
 
         }
 
+        .outline2 {
+            stroke: black;
+            stroke-width: 4px;
+            opacity: 0.5;
+       
+        }
+
         .mouseover {
             stroke-width: 3px;
 
@@ -60,13 +67,13 @@
         }
 
         .button:hover {
-            background-color: yellow;
+            background-color: lightgreen;
 
 
         }
 
         .button:active {
-            background-color: red;
+            background-color: lightseagreen;
         }
 
         /* .button{
@@ -120,6 +127,10 @@
         .gridlines .domain {
         stroke: none;
         }
+
+        /* .hovering {
+            opacity: 0.5;
+        } */
 
 
     </style>
@@ -285,8 +296,8 @@
                 countries2013.forEach( d=> {
                     refugeeByCountry[d.country] = d;
                 });
-                console.log("refugee by country");
-                console.log(refugeeByCountry);
+                // console.log("refugee by country");
+                // console.log(refugeeByCountry);
 
                 // solutionsByCountry = {};
                 // solutions2013sorted.forEach( d => {
@@ -350,10 +361,36 @@
 
                 console.log(refugeeScale);
 
+
+                //draw states and outlines
+
+                worldmap.selectAll("path.countries").data(countries.features)
+                        .join("path")
+                        .attr("class", "countries")
+                        .attr("id", d => sanitizeid(d.properties.name)) //potentially do string replacement, spaces with dashes
+                        .attr("dest_id", d=>d.properties.destination_countries)
+                        .attr("d", path_world)
+                        .attr("fill", d=> {
+                            let refugeeIndex = refugeeScale(d.properties.refugee_total);
+                            let asylumIndex = asylumScale(d.properties.asylum_total);
+
+                            if (refugeeIndex === undefined | asylumIndex ===undefined) {
+                                return ""; //no fill
+                            }
+                            else {
+                                return refugeeColors[refugeeIndex];
+                            }
+                        });
+                worldmap.append("path").datum(countriesMesh)
+                        .attr("class", "outline")
+                        .attr("d", path_world);
+
+
+
                 //let originCountries = ['Syria', 'Venezuela', 'Albania', 'Turkey', 'Laos'];
 
                 let topCountries = ['Afghanistan', 'Syria', 'Somalia', 'Sudan', 'Dem. Rep. Congo', 'Myanmar', 'Iraq', 'Colombia', 'Vietnam', 'Eritrea'];
-
+       
                 let legend = world.append("g")
                                 .attr("class", "legend")
 
@@ -374,7 +411,7 @@
                         .on("click", function() {
                             d3.selectAll("#world-map .countries").each( function() { //are id's needed?
                                 let state = d3.select(this);
-
+                           
                                 let selected_country = state.datum().properties.name;
                                 //let selected_refugees = state.datum().properties.refugee_total;
                                 //let selected_asylums = state.datum().properties.asylum_total;
@@ -382,7 +419,7 @@
                                 //console.log("dest countries");
                                 //console.log(selected_destinations);
 
-                                if(state.attr("id") === d) {
+                                if(state.attr("id") === sanitizeid(d)) {
 
                                     //matches
                                     //state.attr("class", "select-legend")
@@ -471,30 +508,6 @@
 
                 });
             });
-
-                //draw states and outlines
-
-                worldmap.selectAll("path.countries").data(countries.features)
-                        .join("path")
-                        .attr("class", "countries")
-                        .attr("id", d => sanitizeid(d.properties.name)) //potentially do string replacement, spaces with dashes
-                        .attr("dest_id", d=>d.properties.destination_countries)
-                        .attr("d", path_world)
-                        .attr("fill", d=> {
-                            let refugeeIndex = refugeeScale(d.properties.refugee_total);
-                            let asylumIndex = asylumScale(d.properties.asylum_total);
-
-                            if (refugeeIndex === undefined | asylumIndex ===undefined) {
-                                return ""; //no fill
-                            }
-                            else {
-                                return refugeeColors[refugeeIndex];
-                            }
-                        });
-                worldmap.append("path").datum(countriesMesh)
-                        .attr("class", "outline")
-                        .attr("d", path_world);
-
 
 
 
@@ -663,11 +676,14 @@
                 d3.selectAll(".countries").on("mouseout", mouseLeavesPlot);
 
                 function mouseEntersPlot(event, d) {
-                    //console.log("enter")
+                    console.log("enter", d)
 
                     tooltip.style("visibility", "visible");
 
                     let state = d3.select(this);
+
+                    console.log(d.properties.name);
+                    console.log(state.attr("id"));
 
                     //write function receiving the selected element
                     //call function within mouseover, drawSecondMap function
@@ -686,8 +702,8 @@
                     let selected_refugee_vals = d.properties.destination_refugees;
                     let selected_refugee_pairs = d.properties.destination_pairs;
 
-                    console.log(selected_country);
-                    console.log(selected_destinations);
+                    // console.log(selected_country);
+                    // console.log(selected_destinations);
 
 
 
@@ -696,6 +712,15 @@
                                                     function(a,b) { return a.name === selected_country || b.name === selected_country}
                                                     );
                     momesh.datum(mo).attr("d", path_world);
+
+                    //add hovering effects when selected
+
+                    state.attr("class", "outline2");
+
+                    console.log("outline2 ");
+                    console.log(state, d);
+
+           
 
                     txt_country.text(selected_country)
                     txt_stats.text(selected_refugees)
@@ -723,7 +748,15 @@
 
                     let selected_country = d3.select(this);
 
+                
+
                     momesh.attr("d", "");
+
+                    worldmap.selectAll("#world-map .outline2")
+                                
+                                .attr("class", "countries");
+
+            
 
                     finishUpdate();
 
@@ -737,8 +770,8 @@
                 // console.log(selected_destinations);
 
                 selected_destinations.forEach( function(d,i) {
-                    console.log("destination country d");
-                    console.log(d);
+                    // console.log("destination country d");
+                    // console.log(d);
                     // san_id= sanitizeid(d);
                     // let replace_d = d.replace(/ /,"-"); //do string to replace
                     //every place with country name, switch to hypens at the beginning
