@@ -151,6 +151,8 @@
         </p>
         <hr>
         </div>
+
+        <h2> Top 10 highest refugee origin countries </h2>
     </header>
     <body>
 
@@ -170,6 +172,7 @@
 
         </div>
 
+      
 
         <script>
 
@@ -394,15 +397,18 @@
                         .attr("class", "outline")
                         .attr("d", path_world);
 
-
-
-                //let originCountries = ['Syria', 'Venezuela', 'Albania', 'Turkey', 'Laos'];
+    
 
                 let topCountries = ['Afghanistan', 'Syria', 'Somalia', 'Sudan', 'Dem. Rep. Congo', 'Myanmar', 'Iraq', 'Colombia', 'Vietnam', 'Eritrea'];
 
+                
+    
+
                 let legend = world.append("g")
                                 .attr("class", "legend")
-
+                    
+                
+                
 
                 topCountries.forEach( function(d, i) {
                     //console.log(d);
