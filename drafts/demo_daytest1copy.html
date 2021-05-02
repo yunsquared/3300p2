@@ -150,7 +150,7 @@
         <div id="worldLegend" class="legend"> </div>
 
         <div class = "row" style = "width:2600">
-            <svg id="world-map2" height = "600" width="500" ></svg>
+            <svg id="world-map2" height = "600" width="600" ></svg>
             <svg id="world-map" height = "1000" width="1400"></svg>
 
             <!-- style="border: 1px solid lightgray;" -->
@@ -188,7 +188,7 @@
 
             const world_graph = svg2.append("g");
 
-            const margin = {top: 100, right: 60, bottom: 250, left: 50};
+            const margin = {top: 100, right: 80, bottom: 250, left: 80};
 
             const chartWidth = width2 - margin.left - margin.right;
             const chartHeight = height2 - margin.top - margin.bottom;
@@ -211,7 +211,7 @@
 
 
 
-            //TODO POTENTIAL spot for rotate axis https://bl.ocks.org/mbostock/4403522
+         
             let bottomAxis = d3.axisBottom()
 
 
@@ -243,7 +243,7 @@
                 const globe = await d3.json("../datasets/countries-110m.json");
 
                 const countries2013 = await d3.json("../datasets/countries-2013-updated.json");
-                //const countries2014 = await d3.json("../datasets/countries-2014-new.json");
+                
 
                 console.log(countries2013);
 
@@ -854,12 +854,12 @@
                                             .attr("width", destinationScale.bandwidth());
 
 
-                                            let bar_title = chartArea.append("text")
+                let bar_title = svg2.append("text")
                                                             .attr("fill", "black")
                                                             .attr("text-anchor", "left")
                                                             .attr("alignment-baseline", "hanging")
-                                                            .attr("x", 0)
-                                                            .attr("y", 0)
+                                                            .attr("x", 20)
+                                                            .attr("y", 80)
                                                             .attr("font-size","15px")
                                                             .attr("class","bar_title")
                                                             .style("font-family","Roboto, sans-serif")
