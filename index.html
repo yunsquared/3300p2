@@ -43,7 +43,7 @@
 
 
         .legend span {
-         margin-left: 20px;
+         margin-left: 10px;
          margin-bottom: 80px;
   
         }
@@ -52,12 +52,12 @@
             background-color: lightgrey;
             border-width: 2px;
             border-color: black;
-            width: 300;
-            height:100;
+            width: 30px;
+            height: 50px;
             color:white;
             background-color:darkgrey;
             border-radius: 6px;
-            padding: 10px 28px;
+            padding: 10px 18px;
             margin-bottom: 30px;
 
             justify-content: space-evenly;
@@ -67,13 +67,14 @@
         }
 
         .button:hover {
-            background-color: lightgreen;
+            /* background-color: lightgreen; */
+            background-color: #a9d3fc;
 
 
         }
 
         .button:active {
-            background-color: lightseagreen;
+            background-color: lightgreen;
         }
 
         /* .button{
@@ -101,6 +102,7 @@
         }
         .title h1{
           color: #606266;
+          /* color: #2e96ff; */
           margin: 0;
           font-size: 40px;
           text-transform: uppercase;
@@ -185,9 +187,9 @@
        
         <div id="worldLegend" class="legend"> </div>
 
-        <div class = "row" style = "width:2600">
-            <svg id="world-map2" height = "600" width="600" ></svg>
-            <svg id="world-map" height = "1000" width="1200"></svg>
+        <div class = "row" style = "width:1700">
+            <svg id="world-map2" height = "600" width="500" ></svg>
+            <svg id="world-map" height = "900" width="900"></svg>
 
             <!-- style="border: 1px solid lightgray;" -->
 
@@ -368,7 +370,7 @@
 
                 //coloring the map by refugee num
 
-                let refugeeColors= [ "#e6ecf2", "#cfe7ff", "#b3d9ff", '#6bb5ff', "#2e96ff"];
+                let refugeeColors= [ "#e6ecf2", "#cfe7ff", "#a9d3fc", '#6bb5ff', "#2e96ff"];
                 //let refugeeScale = d3.scaleOrdinal(d3.schemeCategory10);
 
                 const refugeeScale = d3.scaleQuantile().domain(refugeeVals).range([0,1,2,3,4]);
@@ -491,18 +493,7 @@
                             d3.selectAll(this).raise()
                             d3.selectAll("#world-map .countries").each( function() {
                                 let state = d3.select(this);
-                                //let state = circle_select.attr("state");
-
-                                //console.log(state);
-
-                                // if (state === d) {
-
-                                //     circle_select.attr("opacity", 0.9);
-                                // }
-
-                                // else {
-                                //     circle_select.attr("opacity", 0.05);
-                                // }
+                                
                                 state.attr("fill", d => {
                                         let refugeeIndex = refugeeScale(d.properties.refugee_total);
                                         let asylumIndex = asylumScale(d.properties.asylum_total);
@@ -535,9 +526,9 @@
                                 .attr("fill", "black")
                                 .attr("text-anchor", "left")
                                 .attr("alignment-baseline", "hanging")
-                                .attr("x", 20)
+                                .attr("x", 10)
                                 .attr("y", 40)
-                                .attr("font-size","30px")
+                                .attr("font-size","25px")
                                 .style("font-family","Roboto, sans-serif")
                                 .style("font-weight","bold")
                                 .style("text-transform","uppercase");
@@ -548,10 +539,10 @@
                                 .attr("fill", "black")
                                 .attr("text-anchor", "left")
                                 .attr("alignment-baseline", "hanging")
-                                .attr("x", 470)
-                                .attr("y", 40)
+                                .attr("x", 10)
+                                .attr("y", 150)
                                 .style("font-family","Roboto, sans-serif")
-                                .attr("font-size","30px")
+                                .attr("font-size","25px")
                                 .style("font-weight","bold")
                                 .style("text-transform","uppercase");
                                perma_label1.text("Refugees: ");
@@ -561,10 +552,10 @@
                                                            .attr("fill", "black")
                                                            .attr("text-anchor", "left")
                                                            .attr("alignment-baseline", "hanging")
-                                                           .attr("x", 820)
-                                                           .attr("y", 40)
+                                                           .attr("x", 480)
+                                                           .attr("y", 150)
                                                            .style("font-family","Roboto, sans-serif")
-                                                           .attr("font-size","30px")
+                                                           .attr("font-size","25px")
                                                            .style("font-weight","bold")
                                                            .style("text-transform","uppercase");
                                                  perma_label2.text("Asylum Seekers: " );
@@ -600,9 +591,9 @@
                                 .attr("fill", "black")
                                 .attr("text-anchor", "left")
                                 .attr("alignment-baseline", "hanging")
-                                .attr("x", 20)
-                                .attr("y", 80)
-                                .attr("font-size","30px")
+                                .attr("x", 200)
+                                .attr("y", 40)
+                                .attr("font-size","25px")
                                 .style("font-family","Roboto, sans-serif")
                                 .style("font-weight","bold")
                                 .style("text-transform","uppercase");
@@ -624,10 +615,10 @@
                                             .attr("fill", "black")
                                             .attr("text-anchor", "left")
                                             .attr("alignment-baseline", "hanging")
-                                            .attr("x", 470)
-                                            .attr("y", 80)
+                                            .attr("x", 200)
+                                            .attr("y", 150)
                                             .style("font-family","Roboto, sans-serif")
-                                            .attr("font-size","30px")
+                                            .attr("font-size","25px")
                                             .style("font-weight","bold")
                                             .style("text-transform","uppercase");
 
@@ -647,10 +638,10 @@
                                             .attr("fill", "black")
                                             .attr("text-anchor", "left")
                                             .attr("alignment-baseline", "hanging")
-                                            .attr("x", 820)
-                                            .attr("y", 80)
+                                            .attr("x", 760)
+                                            .attr("y", 150)
                                             .style("font-family","Roboto, sans-serif")
-                                            .attr("font-size","30px")
+                                            .attr("font-size","25px")
                                             .style("font-weight","bold")
                                             .style("text-transform","uppercase");
 
@@ -672,20 +663,19 @@
                                             .attr("transform","translate(0,600)");
               for (let i=0; i<refugeeColors.length; i++){
                                               colorlegend.append("rect")
-                                              .attr("x",i*1000/refugeeColors.length+50)
-                                              .attr("y",200)
-                                              .attr("width",1000/refugeeColors.length)
-                                              .attr("height",200/4)
+                                              .attr("x",i*800/refugeeColors.length+50)
+                                              .attr("y",100)
+                                              .attr("width",800/refugeeColors.length)
+                                              .attr("height",150/4)
                                               .attr("fill",refugeeColors[i])
-                                       
                                               .attr("stroke","black")
 
                                             }
 
                 for (let i=0; i<=refugeeColors.length; i++){
                     colorlegend.append("text")
-                    .attr("x",i*1000/refugeeColors.length+25 )
-                    .attr("y", 220+50)
+                    .attr("x",i*800/refugeeColors.length+25 )
+                    .attr("y", 155)
                     .text( Math.round(d3.max(refugeeVals)/500000)*i*100000);
 
                     // Math.ceil(number/100)*100
