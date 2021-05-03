@@ -77,7 +77,7 @@
             background-color: lightgreen;
         }
 
- 
+
 
         .selected {
             fill: yellow;
@@ -133,7 +133,7 @@
             height: 20px;
 
         }
- 
+
 
 
     </style>
@@ -152,7 +152,7 @@
         </p>
         <hr>
         </div>
-      
+
         <div class = "legend-title">
             <h2> CLICK ON ANY OF THE TOP 10 HIGHEST REFUGEE ORIGIN COUNTRIES TO LOCATE IT ON THE MAP</h2>
         </div>
@@ -483,8 +483,8 @@
                 let instruction_text1 = instructions.append("text")
                                                 .attr("fill", "steelblue")
                                                 .attr("text-anchor", "left")
-                                 
-                                   
+
+
                                                 .attr("alignment-baseline", "hanging")
                                                 .attr("x", 190)
                                                 .attr("y", 20)
@@ -501,7 +501,7 @@
                                                 .attr("font-size","14px")
                                                 .style("font-family","Roboto, sans-serif");
                                                 instruction_text2.text("The corresponding barplot will depict the breakdown of refugees received by each asylum country.");
-            
+
 
                 //tool tip
                 let momesh = worldmap.append("path").attr("class", "mouseover outline").attr("d", "");
@@ -651,28 +651,46 @@
 
               let colorlegend = worldmap.append("g").attr("class","colorlegend")
                                             .attr("transform","translate(0,600)");
-            let scaleLabel = [123121, 124];
+                                            let scaleList = [0]
+                                            for (let i=0; i<refugeeScale.quantiles().length; i++){
+                                              scaleList.push(refugeeScale.quantiles()[i])
+                                            };
+                                            console.log(scaleList)
 
-              for (let i=0; i<refugeeColors.length; i++){
-                                              colorlegend.append("rect")
-                                              .attr("x",i*800/refugeeColors.length+50)
-                                              .attr("y",100)
-                                              .attr("width",800/refugeeColors.length)
-                                              .attr("height",150/4)
-                                              .attr("fill",refugeeColors[i])
-                                              .attr("stroke","black")
 
-                                            }
+                let roundedList = []
+                for(let i=0; i<scaleList.length; i++){
+                                              roundedList.push(Math.round(scaleList[i] / 50)*50)
+                                            };
+                                            console.log(roundedList)
+
+                let stringList = []
+                for(let i=0; i<scaleList.length; i++){
+                                              stringList.push(String(roundedList[i]))
+                                            };
+                console.log(stringList)
+                stringList.push('20000+')
+
+                for (let i=0; i<refugeeColors.length; i++){
+                                                                            colorlegend.append("rect")
+                                                                            .attr("x",i*800/refugeeColors.length+50)
+                                                                            .attr("y",100)
+                                                                            .attr("width",800/refugeeColors.length)
+                                                                            .attr("height",150/4)
+                                                                            .attr("fill",refugeeColors[i])
+                                                                            .attr("stroke","black")
+
+                                                                          }
 
                 for (let i=0; i<=refugeeColors.length; i++){
-                    colorlegend.append("text")
-                    .attr("x",i*800/refugeeColors.length+25 )
-                    .attr("y", 155)
-                    .text( Math.round(d3.max(refugeeVals)/500000)*i*100000);
+                                                  colorlegend.append("text")
+                                                  .attr("x",i*800/refugeeColors.length+25 )
+                                                  .attr("y", 155)
+                                                  .text( stringList[i]);
 
-                    // Math.ceil(number/100)*100
+                                                  // Math.ceil(number/100)*100
 
-                }
+                                              }
 
 
                 //mouseovers
