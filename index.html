@@ -11,7 +11,7 @@
 
     <style>
 
-      
+
         .country {
             fill: lightgrey;
         }
@@ -45,7 +45,7 @@
         .legend span {
          margin-left: 10px;
          margin-bottom: 80px;
-  
+
         }
 
         .legend .button {
@@ -56,7 +56,7 @@
             height: 50px;
             color:white;
             background-color:darkgrey;
-            border-radius: 6px;
+            border-radius: 10px;
             padding: 10px 18px;
             margin-bottom: 30px;
 
@@ -104,7 +104,7 @@
           color: #606266;
           /* color: #2e96ff; */
           margin: 0;
-          font-size: 40px;
+          font-size: 70px;
           text-transform: uppercase;
           font-weight: 900;
         }
@@ -114,7 +114,7 @@
         }
         .worldLegend{
           background-color:white;
-         
+
 
         }
 
@@ -137,10 +137,11 @@
             text-align: center;
             margin: 0;
             padding: 0;
-            padding-top: 10px;
+            padding-top: 0px;
             line-height: 30px;
             height: 25px;
-            
+            font-size: 35px;
+
         }
         /* h2.remove-whitespace {
   margin: 0;
@@ -155,7 +156,7 @@
         border: 1px solid black;
         } */
 
-        
+
 
         /* .hovering {
             opacity: 0.5;
@@ -168,23 +169,29 @@
       <div class="title">
         <h1>UNHCR Refugee Asylum Data 2013</h1>
         <h3>Combatting misconceptions surrounding refugees and traditional asylum countries via data-driven story-telling</h3>
-        <p>During a time when migration policies and border securities are hotly debated issues in both the United States and abroad, 
-            we hope to convey that asylum seekers and refugees do not originate strictly from developing nations in order to address harmful 
+        <p>During a time when migration policies and border securities are hotly debated issues in both the United States and abroad,
+            we hope to convey that asylum seekers and refugees do not originate strictly from developing nations in order to address harmful
             misconceptions portraying refugees as solely welfare seekers.
-            Through data-driven and interactive storytelling, we aim to provide viewers with accessible tools to explore the breakdown of 
-            refugees and asylum seekers in 2013.  We chose this year to offer a closer look into the most significant refugee crisis in 
-            recent history as a result of the Syrian Civil War, which continues to influence political discourse surrounding migration today.  
-            
+            Through data-driven and interactive storytelling, we aim to provide viewers with accessible tools to explore the breakdown of
+            refugees and asylum seekers in 2013.  We chose this year to offer a closer look into the most significant refugee crisis in
+            recent history as a result of the Syrian Civil War, which continues to influence political discourse surrounding migration today.
+
         </p>
         <hr>
         </div>
+        <h3>Hover over a country to display the total numbers of refugees and asylum seekers orginating from that location.
+        The corresponding barplot will depict the breakdown of destination countries to which these displaced people shifted.
+        The buttons below indicate the 10 biggest producers of displaced people; click on them to help identify the most signficant locations
+        of origin for refugees!</h3>
         <div class = "legend-title">
             <h2> TOP 10 HIGHEST REFUGEE ORIGIN COUNTRIES </h2>
         </div>
 
+
+
     </header>
     <body>
-       
+
         <div id="worldLegend" class="legend"> </div>
 
         <div class = "row" style = "width:1700">
@@ -201,7 +208,7 @@
 
         </div>
 
-      
+
 
         <script>
 
@@ -250,7 +257,7 @@
 
 
 
-         
+
             let bottomAxis = d3.axisBottom()
 
 
@@ -283,7 +290,7 @@
 
                 const countries2013 = await d3.json("datasets/countries-2013-updated.json");
                 // const countries2013 = await d3.json("../datasets/countries-2013.json");
-                
+
 
                 console.log("initial");
                 console.log(countries2013);
@@ -340,7 +347,7 @@
                 // console.log("refugee by country");
                 // console.log(refugeeByCountry);
 
-            
+
 
                 //add refugee and asylum values to topojson properties
                 countries.features.forEach( d => {
@@ -360,7 +367,7 @@
                         d.properties.destination_countries = 0;
                     }
 
-                
+
 
                 });
                 console.log("new features");
@@ -377,7 +384,7 @@
                 const asylumScale = d3.scaleQuantile().domain(asylumVals).range([0,1,2,3,4]);
 
 
-                //TODO: add numerical labels 
+                //TODO: add numerical labels
 
                 // const refugeeScale = d3.scaleLinear().domain(refugeeVals).range([0,1,2]);
                 // const asylumScale = d3.scaleQuantile().domain(asylumVals).range([0,1,2]);
@@ -410,17 +417,17 @@
                         .attr("class", "outline")
                         .attr("d", path_world);
 
-    
+
 
                 let topCountries = ['Afghanistan', 'Syria', 'Somalia', 'Sudan', 'Dem. Rep. Congo', 'Myanmar', 'Iraq', 'Colombia', 'Vietnam', 'Eritrea'];
 
-                
+
 
                 let legend = world.append("g")
                                 .attr("class", "legend")
-                    
-                
-                
+
+
+
                 topCountries.forEach( function(d, i) {
                     //console.log(d);
                     d3.select("#worldLegend")
@@ -471,7 +478,7 @@
 
                                 }
 
-                          
+
 
                             });
 
@@ -493,7 +500,7 @@
                             d3.selectAll(this).raise()
                             d3.selectAll("#world-map .countries").each( function() {
                                 let state = d3.select(this);
-                                
+
                                 state.attr("fill", d => {
                                         let refugeeIndex = refugeeScale(d.properties.refugee_total);
                                         let asylumIndex = asylumScale(d.properties.asylum_total);
@@ -527,8 +534,8 @@
                                 .attr("text-anchor", "left")
                                 .attr("alignment-baseline", "hanging")
                                 .attr("x", 10)
-                                .attr("y", 40)
-                                .attr("font-size","25px")
+                                .attr("y", 75)
+                                .attr("font-size","40px")
                                 .style("font-family","Roboto, sans-serif")
                                 .style("font-weight","bold")
                                 .style("text-transform","uppercase");
@@ -591,9 +598,9 @@
                                 .attr("fill", "black")
                                 .attr("text-anchor", "left")
                                 .attr("alignment-baseline", "hanging")
-                                .attr("x", 200)
-                                .attr("y", 40)
-                                .attr("font-size","25px")
+                                .attr("x", 270)
+                                .attr("y", 75)
+                                .attr("font-size","40px")
                                 .style("font-family","Roboto, sans-serif")
                                 .style("font-weight","bold")
                                 .style("text-transform","uppercase");
@@ -679,7 +686,7 @@
                     .text( Math.round(d3.max(refugeeVals)/500000)*i*100000);
 
                     // Math.ceil(number/100)*100
-                   
+
                 }
 
 
@@ -810,7 +817,7 @@
             function updateGraph(selected_destinations, selected_refugee_vals, selected_refugee_pairs) {
                 console.log(selected_destinations);
                 // console.log("extent");
-                
+
 
 
                 //y axis
