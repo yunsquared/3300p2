@@ -134,12 +134,14 @@
 
         .legend-title {
             align-items: center;
-            text-align: center;
+            text-align: Left;
             margin: 0;
             padding: 0;
+            padding-left:30px;
+
             padding-top: 10px;
-            line-height: 30px;
-            height: 25px;
+            line-height: 21px;
+            height: 20px;
 
         }
         /* h2.remove-whitespace {
@@ -178,12 +180,11 @@
         </p>
         <hr>
         </div>
-        <h3>Hover over a country to display the total numbers of refugees and asylum seekers orginating from that location.
-        The corresponding barplot will depict the breakdown of destination countries to which these displaced people shifted.
-        The buttons below indicate the 10 biggest producers of displaced people; click on them to help identify the most signficant location
-        of origin for refugees!</h3>
+        <!-- <p>Hover over a country to display refugee and asylum seeker statistics. 
+            The corresponding barplot will depict the breakdown of refugees received by each asylum country. 
+            Click on the buttons below to find the top refugee origin countries on the map!</p> -->
         <div class = "legend-title">
-            <h2> TOP 10 HIGHEST REFUGEE ORIGIN COUNTRIES </h2>
+            <h2> CLICK ON ANY OF THE TOP 10 HIGHEST REFUGEE ORIGIN COUNTRIES TO LOCATE IT ON THE MAP</h2>
         </div>
 
 
@@ -515,14 +516,35 @@
                 });
             });
 
+                let instructions = world.append("g").attr("class", "instruction-text");
 
+                let instruction_text1 = instructions.append("text")
+                                                .attr("fill", "steelblue")
+                                                .attr("text-anchor", "left")
+                                   
+                                                .attr("alignment-baseline", "hanging")
+                                                .attr("x", 10)
+                                                .attr("y", 20)
+                                                .attr("font-size","15px")
+                                                .style("font-family","Roboto, sans-serif");
+                                                instruction_text1.text("Hover over a country to display refugee and asylum seeker statistics.");
+
+                let instruction_text2 = instructions.append("text")
+                                                .attr("fill", "steelblue")
+                                                .attr("text-anchor", "left")
+                                                .attr("alignment-baseline", "hanging")
+                                                .attr("x", 10)
+                                                .attr("y", 40)
+                                                .attr("font-size","15px")
+                                                .style("font-family","Roboto, sans-serif");
+                                                instruction_text2.text("The corresponding barplot will depict the breakdown of refugees received by each asylum country.");
+            
 
                 //tool tip
                 let momesh = worldmap.append("path").attr("class", "mouseover outline").attr("d", "");
 
                 let tooltipWidth = 200;
                 let tooltipHeight = 200;
-
 
 
                 let perma = world.append("g").attr("class","labeltip");
@@ -532,7 +554,7 @@
                                 .attr("text-anchor", "left")
                                 .attr("alignment-baseline", "hanging")
                                 .attr("x", 10)
-                                .attr("y", 40)
+                                .attr("y", 70)
                                 .attr("font-size","25px")
                                 .style("font-family","Roboto, sans-serif")
                                 .style("font-weight","bold")
@@ -545,7 +567,7 @@
                                 .attr("text-anchor", "left")
                                 .attr("alignment-baseline", "hanging")
                                 .attr("x", 10)
-                                .attr("y", 150)
+                                .attr("y", 170)
                                 .style("font-family","Roboto, sans-serif")
                                 .attr("font-size","25px")
                                 .style("font-weight","bold")
@@ -558,7 +580,7 @@
                                                            .attr("text-anchor", "left")
                                                            .attr("alignment-baseline", "hanging")
                                                            .attr("x", 480)
-                                                           .attr("y", 150)
+                                                           .attr("y", 170)
                                                            .style("font-family","Roboto, sans-serif")
                                                            .attr("font-size","25px")
                                                            .style("font-weight","bold")
@@ -597,7 +619,7 @@
                                 .attr("text-anchor", "left")
                                 .attr("alignment-baseline", "hanging")
                                 .attr("x", 200)
-                                .attr("y", 40)
+                                .attr("y", 70)
                                 .attr("font-size","25px")
                                 .style("font-family","Roboto, sans-serif")
                                 .style("font-weight","bold")
@@ -621,7 +643,7 @@
                                             .attr("text-anchor", "left")
                                             .attr("alignment-baseline", "hanging")
                                             .attr("x", 200)
-                                            .attr("y", 150)
+                                            .attr("y", 170)
                                             .style("font-family","Roboto, sans-serif")
                                             .attr("font-size","25px")
                                             .style("font-weight","bold")
@@ -644,7 +666,7 @@
                                             .attr("text-anchor", "left")
                                             .attr("alignment-baseline", "hanging")
                                             .attr("x", 760)
-                                            .attr("y", 150)
+                                            .attr("y", 170)
                                             .style("font-family","Roboto, sans-serif")
                                             .attr("font-size","25px")
                                             .style("font-weight","bold")
@@ -666,6 +688,8 @@
 
               let colorlegend = worldmap.append("g").attr("class","colorlegend")
                                             .attr("transform","translate(0,600)");
+            let scaleLabel = [123121, 124];
+
               for (let i=0; i<refugeeColors.length; i++){
                                               colorlegend.append("rect")
                                               .attr("x",i*800/refugeeColors.length+50)
