@@ -376,6 +376,9 @@
                 const refugeeScale = d3.scaleQuantile().domain(refugeeVals).range([0,1,2,3,4]);
                 const asylumScale = d3.scaleQuantile().domain(asylumVals).range([0,1,2,3,4]);
 
+                // const refugeeScale = d3.scaleThreshold().domain([50000,100000,150000,200000]).range([0,1,2,3,4]);
+                // const asylumScale = d3.scaleThreshold().domain([50000,100000,150000,200000]).range([0,1,2,3,4]);
+
 
                 //TODO: add numerical labels 
 
@@ -676,7 +679,7 @@
                     colorlegend.append("text")
                     .attr("x",i*800/refugeeColors.length+25 )
                     .attr("y", 155)
-                    .text( Math.round(d3.max(refugeeVals)/500000)*i*100000);
+                    .text( Math.round(d3.max(refugeeVals)/500000)*i*10000);
 
                     // Math.ceil(number/100)*100
                    
